@@ -20,14 +20,16 @@ public:
     terminal.write(EC_BLD "P" EC_NOF ". serial " EC_BLD "P" EC_NOF "ort" EC_CRLF);
     terminal.write(EC_BLD "T" EC_NOF ". " EC_BLD "T" EC_NOF "erminal" EC_CRLF);
     terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "isplay" EC_CRLF);
+    terminal.write(EC_BLD "A" EC_NOF ". d" EC_BLD "A" EC_NOF "te and time" EC_CRLF);
     if (displayPreferences.currentDisplayMode().supportsBluetooth) {
       terminal.write(EC_BLD "B" EC_NOF ". " EC_BLD "B" EC_NOF "luetooth" EC_CRLF);
     }
-    terminal.write(EC_BLD "S" EC_NOF ". " EC_BLD "S" EC_NOF "how capabilities (test page)" EC_CRLF);
+    terminal.write(EC_BLD "S" EC_NOF ". " EC_BLD "S" EC_NOF "how capabilities (test page)");
+  
+    terminal.write(EC_CRLF  EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel (close)" EC_NOF);
 
-    terminal.write(EC_CRLF EC_BLD "ESC" EC_NOF ". " EC_BLD "Close" EC_NOF EC_CRLF EC_CRLF EC_CRLF EC_CRLF);
-
-    terminal.write(EC_DWI EC_ULN "ABOUT" EC_NOF EC_CRLF EC_CRLF);
+    terminal.write(EC_CRLF EC_CRLF EC_CRLF EC_CRLF EC_DWI EC_ULN "ABOUT" EC_NOF EC_CRLF EC_CRLF);
 
     terminal.write("SporosTerm V0.1" EC_CRLF);
     terminal.write("Copyright " EC_COPR " 2025 Peter de Vroomen" EC_CRLF EC_CRLF);
@@ -55,6 +57,9 @@ public:
       case VirtualKey::VK_d:
       case VirtualKey::VK_D:
         return gotoDisplaySettingsPage;
+      case VirtualKey::VK_a:
+      case VirtualKey::VK_A:
+        return gotoDateTimeSettingsPage;
       case VirtualKey::VK_b:
       case VirtualKey::VK_B:
         if (displayPreferences.currentDisplayMode().supportsBluetooth) {

@@ -62,7 +62,7 @@ public:
 
 private:
 
-  char scratchBuf[16];
+  char scratchBuf[64];
 
   bool needsRestart = false;
   bool askingForRestart = false;
@@ -87,7 +87,7 @@ private:
     terminal.write(EC_CRLF);
 
     terminal.write("  Display characters\t");
-    sprintf(scratchBuf, "%dx%d", selectedDisplayMode.columns, selectedDisplayMode.rows);
+    sprintf(scratchBuf, "%dx%d (%dx%d font)", selectedDisplayMode.columns, selectedDisplayMode.rows, selectedDisplayMode.font->width, selectedDisplayMode.font->height);
     terminal.write(scratchBuf);
     terminal.write(EC_CRLF);
 
@@ -104,10 +104,12 @@ private:
     terminal.write(selectedDisplayMode.supportsBluetooth ? "yes" : "no");
     terminal.write(EC_CRLF EC_CRLF);
 
+    terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "isplay mode\t");
+    terminal.write(EC_CRLF EC_CRLF);
+
     terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_CRLF EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF EC_CRLF);
     if (displayPreferences.hasChanges()) {
       if (askingForRestart) {
         terminal.write(EC_CRLF "     >>> " EC_ULN EC_BLK "PRESS SPACE TO ACCEPT AND RESTART, ANY OTHER KEY TO CANCEL" EC_NOF " <<<");
@@ -116,6 +118,9 @@ private:
         terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and reset");
       }
     }
+
+    terminal.write(EC_CRLF EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF EC_CRLF);
 
     terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
 

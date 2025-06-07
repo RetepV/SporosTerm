@@ -25,11 +25,9 @@ public:
 
     switch (choice) {
       case VirtualKey::VK_ESCAPE:
-        Serial.printf("SettingsBluetoothPage: Cancel, goto main page\n");
         return gotoMainSettingsPage;
       case VirtualKey::VK_a:
       case VirtualKey::VK_A:
-        Serial.printf("SettingsBluetoothPage: Save and exit/reset . main page\n");
         bluetoothPreferences.save();
         bluetoothPreferences.apply();
         return gotoMainSettingsPage;
@@ -96,14 +94,14 @@ private:
     terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "C" EC_NOF "ancel" EC_CRLF);
-
     if (bluetoothPreferences.needsReset) {
       terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and reset");
     }
     else {
       terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and go back");
     }
+    terminal.write(EC_CRLF EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "C" EC_NOF "ancel");
 
     terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
 

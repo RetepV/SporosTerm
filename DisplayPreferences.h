@@ -5,9 +5,9 @@
 class DisplayPreferences;
 extern DisplayPreferences displayPreferences;
 
-#define NUM_DISPLAYMODES      12
+#define NUM_DISPLAYMODES      8
 
-#define DEFAULT_DISPLAYMODE   4
+#define DEFAULT_DISPLAYMODE   0
 
 #define SVGA_800x480_66Hz "\"800x480@66Hz\" 36 800 824 896 1024 480 490 492 525 -HSync -VSync"
 #define SVGA_800x480_66Hz_Alt "\"800x480@66Hz\" 36 800 824 896 1024 480 494 496 533 -HSync -VSync"
@@ -168,7 +168,6 @@ public:
   void fetch() {
     currentDisplayModeIndex = preferences.getInt(prefDisplayModeIndexKey);
     selectedDisplayModeIndex = currentDisplayModeIndex;
-    Serial.printf("Fetched display mode index: %d\n", selectedDisplayModeIndex);
   }
 
   void save() {
@@ -176,7 +175,6 @@ public:
     preferences.end();
     preferences.begin(preferencesName, false);
 
-    Serial.printf("Save display mode index: %d\n", selectedDisplayModeIndex);
     preferences.putInt(prefDisplayModeIndexKey, selectedDisplayModeIndex);
 
     if (selectedDisplayModeIndex != currentDisplayModeIndex) {

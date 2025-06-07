@@ -25,7 +25,6 @@ public:
 
     switch (choice) {
       case VirtualKey::VK_ESCAPE:
-        Serial.printf("SettingsBluetoothPage: Cancel, goto main page\n");
         return gotoMainSettingsPage;
      }
      return noFurtherAction;
@@ -72,45 +71,45 @@ private:
       }
 
       if (row == 2) {
-        sprintf(scratchBuf, "   Resolution: %dx%d (%dx%d characters)", currentDisplayMode.xRes, currentDisplayMode.yRes, currentDisplayMode.columns, currentDisplayMode.rows);
-        terminal.write(scratchBuf);
-      }
-      if (row == 3) {
         terminal.write("   ");
         for (uint8_t ch = 0; ch < 64; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 4) {
+      else if (row == 3) {
         terminal.write("   ");
         for (uint8_t ch = 64; ch < 128; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 5) {
+      else if (row == 4) {
         terminal.write("   ");
         for (uint8_t ch = 128; ch < 192; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 6) {
+      else if (row == 5) {
         terminal.write("   ");
         for (uint8_t ch = 192; ch < 255; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 8) {
-        terminal.write("   ");
+      else if (row == 7) {
+        sprintf(scratchBuf, "   Resolution: %dx%d (%dx%d characters)", currentDisplayMode.xRes, currentDisplayMode.yRes, currentDisplayMode.columns, currentDisplayMode.rows);
+        terminal.write(scratchBuf);
+      }
+      else if (row == 9) {
+        terminal.write("Colors:  ");
         for (uint8_t color = 30; color <= 37; color++) {
-          sprintf(scratchBuf, "\e[%dmXXX ", color);
+          sprintf(scratchBuf, EC_NOF "[\e[%dmXX" EC_NOF "] ", color);
           terminal.write(scratchBuf);          
         }
         for (uint8_t color = 90; color <= 97; color++) {
-          sprintf(scratchBuf, "\e[%dmXXX ", color);
+          sprintf(scratchBuf, EC_NOF "[\e[%dmXX" EC_NOF "] ", color);
           terminal.write(scratchBuf);          
         }
       }

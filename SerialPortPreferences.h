@@ -1,3 +1,4 @@
+#include "RelayManager.h"
 #include <Preferences.h>
 
 #pragma once
@@ -5,11 +6,12 @@
 class SerialPortPreferences;
 extern SerialPortPreferences serialPortPreferences;
 
-#define NUM_BAUDRATES     22
-#define NUM_PARITIES      3
-#define NUM_DATASIZES     4
-#define NUM_STOPBITS      4
-#define NUM_FLOWCONTROLS  4
+#define NUM_BAUDRATES       22
+#define NUM_PARITIES        3
+#define NUM_DATASIZES       4
+#define NUM_STOPBITS        4
+#define NUM_FLOWCONTROLS    6
+#define NUM_MODEMTYPES      2
 
 #define UART_RX       34
 #define UART_TX       2
@@ -17,12 +19,27 @@ extern SerialPortPreferences serialPortPreferences;
 #define UART_CTS      35
 
 #define DEFAULT_UART_INDEX    2
-#define DEFAULT_UART_BAUD     9600
+#define DEFAULT_UART_BAUD     2400
 #define DEFAULT_UART_BITS     8
 #define DEFAULT_UART_PARITY   'N'
 #define DEFAULT_UART_STOPBITS 1.0
-#define DEFAULT_UART_FLOW     fabgl::FlowControl::Hardware
+#define DEFAULT_UART_FLOW     SerialPortFlowControlType::SerialPortFlowControlNone
+#define DEFAULT_MODEM_TYPE    ModemType::ModemTypeStraight
 #define DEFAULT_UART_INVERTED false
+
+enum SerialPortFlowControlType {
+  SerialPortFlowControlNone,
+  SerialPortFlowControlXON,
+  SerialPortFlowControlRTS,
+  SerialPortFlowControlDTR,
+  SerialPortFlowControlXONRTS,
+  SerialPortFlowControlXONDTR
+};
+
+enum ModemType {
+  ModemTypeStraight = 0,
+  ModemTypeNullModem
+};
 
 class SerialPortPreferences {
   
@@ -32,13 +49,14 @@ public:
   const char *preferencesName = "SporosTerm-SER";
 
   const char *prefVersionKey            = "VS";
-  const int  preferencesVersion         = 2;
+  const int  preferencesVersion         = 3;
 
   const char *prefBaudRateKey           = "BR";
   const char *prefParityKey             = "PY";
   const char *prefDataSizeKey           = "DS";
   const char *prefStopBitsKey           = "SB";
   const char *prefFlowControlKey        = "FC";
+  const char *prefModemTypeKey          = "MT";
   const char *sendDelayEnabledKey       = "SDe";
   const char *sendDelayCharMillisecondsKey  = "SC";
   const char *sendDelayLineMillisecondsKey  = "SL";
@@ -63,10 +81,38 @@ public:
   int currentStopBitsIndex;
   int selectedStopBitsIndex;
 
-  FlowControl selectableFlowControls[NUM_FLOWCONTROLS] = { FlowControl::None, FlowControl::Software, FlowControl::Hardware, FlowControl::Hardsoft };
-  char *selectableFlowControlsStrings[NUM_FLOWCONTROLS] = { "None", "Xon/Xoff", "RTS/CTS or DSR/DTR", "Xon/Xoff with RTS/CTS or DSR/DTR" };
+  SerialPortFlowControlType selectableFlowControls[NUM_FLOWCONTROLS] = {
+    SerialPortFlowControlNone,
+    SerialPortFlowControlXON,
+    SerialPortFlowControlRTS,
+    SerialPortFlowControlDTR,
+    SerialPortFlowControlXONRTS,
+    SerialPortFlowControlXONDTR
+  };
+  char *selectableFlowControlsStrings[NUM_FLOWCONTROLS] = {
+    "None",
+    "Xon/Xoff",
+    "RTS/CTS",
+    "DTR/DSR",
+    "Xon/Xoff with RTS/CTS",
+    "Xon/Xoff with DTR/DSR"
+  };
+  char *flowControlShortStrings[NUM_FLOWCONTROLS] = {
+    "NON",
+    "XON",
+    "RTS",
+    "DTR",
+    "X&R",
+    "X&D"
+  };
   int currentFlowControlIndex;
   int selectedFlowControlIndex;
+
+  ModemType selectableModemTypes[NUM_MODEMTYPES] = { ModemType::ModemTypeStraight, ModemType::ModemTypeNullModem};
+  char *selectableModemTypesStrings[NUM_MODEMTYPES] = { "Straight through", "Null modem" };
+  char *modemTypeShortStrings[NUM_MODEMTYPES] = { "STR", "NUL" };
+  int currentModemTypeIndex;
+  int selectedModemTypeIndex;
 
   bool currentSendDelayEnabled = false;
   bool selectedSendDelayEnabled = false;
@@ -109,8 +155,10 @@ public:
     selectedDataSizeIndex = currentDataSizeIndex;
     currentStopBitsIndex = determineStopBitsIndex(preferences.getFloat(prefStopBitsKey));
     selectedStopBitsIndex = currentStopBitsIndex;
-    currentFlowControlIndex = determineFlowControlIndex((FlowControl)preferences.getInt(prefFlowControlKey));
+    currentFlowControlIndex = determineFlowControlIndex((SerialPortFlowControlType)preferences.getInt(prefFlowControlKey));
     selectedFlowControlIndex = currentFlowControlIndex;
+    currentModemTypeIndex = determineModemTypeIndex((ModemType)preferences.getInt(prefModemTypeKey));
+    selectedModemTypeIndex = currentModemTypeIndex;
     currentSendDelayEnabled = preferences.getBool(sendDelayEnabledKey);
     selectedSendDelayEnabled = currentSendDelayEnabled;
     currentSendDelayCharMilliseconds = preferences.getInt(sendDelayCharMillisecondsKey);
@@ -129,6 +177,7 @@ public:
     preferences.putInt(prefDataSizeKey, selectedDataSize());
     preferences.putFloat(prefStopBitsKey, selectedStopBits());
     preferences.putInt(prefFlowControlKey, (int)selectedFlowControl());
+    preferences.putInt(prefModemTypeKey, (int)selectedModemType());
     preferences.putBool(sendDelayEnabledKey, selectedSendDelayEnabled);
     preferences.putInt(sendDelayCharMillisecondsKey, selectedSendDelayCharMilliseconds);
     preferences.putInt(sendDelayLineMillisecondsKey, selectedSendDelayLineMilliseconds);
@@ -165,6 +214,9 @@ public:
     if (!preferences.isKey(prefFlowControlKey)) {
       preferences.putInt(prefFlowControlKey, (int)DEFAULT_UART_FLOW);
     }
+    if (!preferences.isKey(prefModemTypeKey)) {
+      preferences.putInt(prefModemTypeKey, (int)DEFAULT_MODEM_TYPE);
+    }
     if (!preferences.isKey(sendDelayEnabledKey)) {
       preferences.putBool(sendDelayEnabledKey, selectedSendDelayEnabled);
     }
@@ -183,27 +235,53 @@ public:
     fetch();
   }
 
+  fabgl::FlowControl fabglFlowControl(SerialPortFlowControlType flowControl) {
+
+    switch (flowControl) {
+      case SerialPortFlowControlNone:
+        return fabgl::FlowControl::None;
+      case SerialPortFlowControlXON:
+        return fabgl::FlowControl::Software;
+      case SerialPortFlowControlRTS:
+      case SerialPortFlowControlDTR:
+        return fabgl::FlowControl::Hardware;
+      case SerialPortFlowControlXONRTS:
+      case SerialPortFlowControlXONDTR:
+        return fabgl::FlowControl::Hardsoft;
+      default:
+        return fabgl::FlowControl::None;
+    }
+  }
+
+  bool isDtrDsr(SerialPortFlowControlType flowControl) {
+    switch (flowControl) {
+      case SerialPortFlowControlDTR:
+      case SerialPortFlowControlXONDTR:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool isStraightModem(ModemType modemType) {
+    return modemType == ModemTypeStraight;
+  }
+
   void apply() {
 
     serialPort.setSignals(UART_RX, UART_TX, UART_RTS, UART_CTS, UART_RTS, UART_CTS, -1, -1);
-    // delay(100);
+
     float stopBits = currentStopBits();
-    Serial.printf("serialPort.setup: %6d,%c,%1d,%1d.%1d %d\n",
-                                                 currentBaudRate(),
-                                                 currentParity(),
-                                                 currentDataSize(),
-                                                 int(stopBits), int(10 * (stopBits - int(stopBits))),
-                                                 currentFlowControl());
 
     serialPort.setup(DEFAULT_UART_INDEX, 
                      currentBaudRate(),
                      currentDataSize(),
                      currentParity(),
                      currentStopBits(),
-                     currentFlowControl(),
+                     fabglFlowControl(currentFlowControl()),
                      DEFAULT_UART_INVERTED);
 
-    Serial.printf("Serial port successfully setup\n");
+    relayManager.setRelays(!isStraightModem(currentModemType()),isDtrDsr(currentFlowControl()));
 
     currentSendDelayEnabled = selectedSendDelayEnabled;
     currentSendDelayCharMilliseconds = selectedSendDelayCharMilliseconds;
@@ -358,11 +436,11 @@ public:
     }
   }
 
-  FlowControl currentFlowControl() {
+  SerialPortFlowControlType currentFlowControl() {
     return selectableFlowControls[currentFlowControlIndex];
   }
 
-  FlowControl selectedFlowControl() {
+  SerialPortFlowControlType selectedFlowControl() {
     return selectableFlowControls[selectedFlowControlIndex];
   }
 
@@ -370,7 +448,11 @@ public:
     return selectableFlowControlsStrings[selectedFlowControlIndex];
   }
 
-  int determineFlowControlIndex(FlowControl flowControl) {
+  char *currentFlowControlShortString() {
+    return flowControlShortStrings[currentFlowControlIndex];
+  }
+
+  int determineFlowControlIndex(SerialPortFlowControlType flowControl) {
     for (int index = 0; index < NUM_FLOWCONTROLS; index++) {
       if (selectableFlowControls[index] == flowControl) {
         return index;
@@ -392,6 +474,47 @@ public:
    }
    else {
       selectedFlowControlIndex--;
+    }
+  }
+
+  ModemType currentModemType() {
+    return selectableModemTypes[currentModemTypeIndex];
+  }
+
+  ModemType selectedModemType() {
+    return selectableModemTypes[selectedModemTypeIndex];
+  }
+
+  char *currentModemTypeShortString() {
+    return modemTypeShortStrings[currentModemTypeIndex];
+  }
+
+  char *selectedModemTypeString() {
+    return selectableModemTypesStrings[selectedModemTypeIndex];
+  }
+
+  int determineModemTypeIndex(ModemType modemType) {
+    for (int index = 0; index < NUM_MODEMTYPES; index++) {
+      if (selectableModemTypes[index] == modemType) {
+        return index;
+      }
+    }
+    return 0;
+  }
+
+  void selectNextModemType() {
+    selectedModemTypeIndex++;
+    if (selectedModemTypeIndex >= NUM_MODEMTYPES) {
+      selectedModemTypeIndex = 0;
+    }
+  }
+
+  void selectPrevModemType() {
+    if (selectedModemTypeIndex == 0) {
+      selectedModemTypeIndex = NUM_MODEMTYPES - 1;
+   }
+   else {
+      selectedModemTypeIndex--;
     }
   }
 

@@ -1,13 +1,19 @@
+#include "comdrivers/serialport.h"
 #include "SerialPortPreferences.h"
+#include "RealTimeClock.h"
 
 #pragma once
 
-#define STATUSBAR_DELIM     ' '
+#define STATUSBAR_DELIM                 ' '
 
 class StatusBar;
 extern StatusBar statusBar;
 
 class StatusBar {
+
+private:
+
+  TimerHandle_t updateTimer;
 
 public:
   int statusBarRow;
@@ -27,53 +33,94 @@ public:
 
 private:
 
-  TimerHandle_t updateTimer;
+  static void statusBarUpdate(xTimerHandle pxTimer) {
 
-  void statusBarWriteRaw(int positionX, int positionY, char *text) {
+    static bool updateTimeNow = true;     // Used to limit the amount of reads per second from the RTC a bit.
+    static MacAbsoluteTime currentTime = MacAbsoluteTime(1, 0);  
+
+    if (updateTimeNow) {
+      currentTime.update(realTimeClock.readTime(), 0);
+    }
+    updateTimeNow = ~updateTimeNow;
+
+    char buffer[128];
+    float stopBits = serialPortPreferences.currentStopBits();
+
+    sprintf(buffer,
+      "%03d,%03d"
+      "%c%s"
+      "%c%s"
+      "%c%s"
+      "                  "      // 28 spaces, can we do this nicer?
+      "%c%3s"
+      "%c%3s"
+      "%c%6d,%c,%1d,%1d.%1d"
+      "%c%02d-%02d-%04d"
+      "%c%02d:%02d:%02d"
+      ,
+      terminal.cursorCol(), terminal.cursorRow(),
+      STATUSBAR_DELIM, terminal.keyboard()->isCapsLock() ? "CAP" : "cap",
+      STATUSBAR_DELIM, terminal.keyboard()->isNumLock() ? "NUM" : "num",
+      STATUSBAR_DELIM, terminal.keyboard()->isScrollLock() ? "SCR" : "scr",
+      STATUSBAR_DELIM, serialPortPreferences.currentModemTypeShortString(),
+      STATUSBAR_DELIM, serialPortPreferences.currentFlowControlShortString(),
+      STATUSBAR_DELIM,
+        serialPortPreferences.currentBaudRate(),
+        serialPortPreferences.currentParity(),
+        serialPortPreferences.currentDataSize(),
+        int(stopBits), int(10 * (stopBits - int(stopBits))),
+      STATUSBAR_DELIM, currentTime.components.tm_mday, currentTime.components.tm_mon + 1, currentTime.components.tm_year + 1900,
+      STATUSBAR_DELIM, currentTime.components.tm_hour, currentTime.components.tm_min, currentTime.components.tm_sec
+    );
 
     fabgl::FontInfo font = terminal.font();
-    fabgl::CanvasState savedState = terminal.canvas()->getCanvasState();
+
+    // We must write to the canvas in 'raw' mode, using drawText. But that does not support escape-codes. So we
+    // must set the glyphOptions ourself. However, the canvas has only one set of glyphOptions, and one renderqueue.
+    // So we must:
+    // 1. Stop the rendering queue, so that we take full control.
+    // 2. Finish any rendering stuff that is still in the queue.
+    // 3. Save the current glyphOptions.
+    // 4. Set our own glyphOptions.
+    // 5. Render our stuff.
+    // 6. Finish rendering our stuff.
+    // 7. Restore the saved glyphOptions.
+    // 8. Re-enable the queue.
+    //
+    // This is all quite elaborate. But the worst part is that it doesn't really work, I am seeing glyphOptions of
+    // the status bar appearing in the normal text area of the screen.
+    //
+    // I think the issue is that we don't want to queue to stop being processed, but want to *lock the queue for
+    // ourselves*, so that nothing can enter it (e.g. from a higher priority process) while the status bar is being
+    // rendered.
+    // But we probably can't lock it, as that might halt the other processes, leading to missed data. This would again
+    // be visible on the screen.
+    // Maybe the solution is to hack somewhat into the queue system. Maybe we can add a priority system, which causes
+    // higher priority things to be rendered before lower priority things.
+    // The status bar would then stop and empty the queue. Then add its stuff with a high priority. Anything added
+    // in the mean time (e.g. from an interrupt function), will go in the queue but not be rendered.
+    // Then restart processing the queue. It will execute all high priority stuff first, and then continue with 
+    // normal priority stuff.
+
+    // Stop processing the queue
+    terminal.canvas()->beginUpdate();
+    // Render the queue clean.
+    terminal.canvas()->waitCompletion(false);
 
     fabgl::GlyphOptions glyphOptions;
     glyphOptions.value = 0;
     glyphOptions.fillBackground = 1;
     glyphOptions.invert = 1;
+
+    fabgl::CanvasState savedState = terminal.canvas()->getCanvasState();
     terminal.canvas()->setGlyphOptions(glyphOptions);
-
-    terminal.canvas()->drawText(&font, positionX * font.width, positionY * font.height, text);
+    terminal.canvas()->drawText(&font, 0, statusBar.statusBarRow * font.height, buffer);
     terminal.canvas()->setCanvasState(savedState);
-  }
 
-  static void statusBarUpdate(xTimerHandle pxTimer) {
-    
-    time_t currentTime;
-    struct tm *currentLocalTime;
-    time(&currentTime);
-    currentLocalTime = localtime(&currentTime);
-
-    char buffer[81];
-    memset(buffer, ' ', 81);
-    buffer[80] = 0;
-    
-    sprintf(&buffer[0], "%03d,%03d", terminal.cursorCol(), terminal.cursorRow());
-
-    sprintf(&buffer[7], "%c%s", STATUSBAR_DELIM, terminal.keyboard()->isCapsLock() ? "CAP" : "cap");
-    sprintf(&buffer[11], "%c%s", STATUSBAR_DELIM, terminal.keyboard()->isNumLock() ? "NUM" : "num");
-    sprintf(&buffer[15], "%c%s", STATUSBAR_DELIM, terminal.keyboard()->isScrollLock() ? "SCR" : "scr");
-    buffer[19] = ' ';
-
-    sprintf(&buffer[48], "%c%3s", STATUSBAR_DELIM, "NUL");
-    sprintf(&buffer[52], "%c%3s", STATUSBAR_DELIM, "RTS");
-
-    float stopBits = serialPortPreferences.currentStopBits();
-    sprintf(&buffer[56], "%c%6d,%c,%1d,%1d.%1d", STATUSBAR_DELIM,
-                                                 serialPortPreferences.currentBaudRate(),
-                                                 serialPortPreferences.currentParity(),
-                                                 serialPortPreferences.currentDataSize(),
-                                                 int(stopBits), int(10 * (stopBits - int(stopBits))));
-    sprintf(&buffer[71], "%c%02d:%02d:%02d", STATUSBAR_DELIM, currentLocalTime->tm_hour, currentLocalTime->tm_min, currentLocalTime->tm_sec);
-
-    statusBar.statusBarWriteRaw(0, statusBar.statusBarRow, buffer);
+    // Render the queue clean again.
+    terminal.canvas()->waitCompletion(false);
+    // Re-enable processing the queue
+    terminal.canvas()->endUpdate();
   }
  };
 

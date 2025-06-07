@@ -9,7 +9,8 @@ enum SettingsPageAction {
   gotoTerminalSettingsPage,
   gotoDisplaySettingsPage,
   gotoBluetoothSettingsPage,
-  gotoTestSettingsPage
+  gotoTestSettingsPage,
+  gotoDateTimeSettingsPage
 };
 
 class SettingsManagerPage {

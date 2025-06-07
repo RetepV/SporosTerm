@@ -8,6 +8,7 @@ fabgl::Terminal                     terminal;
 fabgl::TerminalController           TerminalController(&terminal);
 fabgl::SerialPort                   serialPort;
 fabgl::SerialPortTerminalConnector  serialPortTerminalConnector;
+
 BluetoothSerial                     bluetoothSerial;
 
 #include "SerialPortPreferences.h"
@@ -31,7 +32,9 @@ void setup() {
   delay(100); // experienced crashes without this delay!
   disableCore1WDT();
 
-  Peripherals::restorePreferences();
+  Peripherals::setupRealTimeClock();
+
+  Peripherals::initializePreferences();
 
   Peripherals::setupPS2Ports();
   Peripherals::setupDisplayController();
@@ -39,8 +42,6 @@ void setup() {
   Peripherals::setupSerialPortTerminalConnector();
   Peripherals::setupBT();
   Peripherals::setupStatusBar();
-  Peripherals::setupRelays(false, false);
-  // NOTE: If we initialize this after setupTerminal, the app crashes at soft restart.
   Peripherals::setupSerialPort();
 
   terminal.write(EC_CON EC_CLS EC_CHM EC_NOF);

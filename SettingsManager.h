@@ -6,6 +6,7 @@
 #include "SettingsDisplayPage.h"
 #include "SettingsBluetoothPage.h"
 #include "SettingsTestPage.h"
+#include "SettingsDateTimePage.h"
 
 #pragma once
 
@@ -45,8 +46,6 @@ public:
   }
 
   void finish() {
-
-    Serial.printf("SettingsManager: finish\n");
 
     terminal.onLocalModeVirtualKeyItem = [&](VirtualKeyItem *item) {
     };
@@ -93,7 +92,6 @@ private:
       case noFurtherAction:
         return;
       case endSettings:
-        Serial.printf("SettingsManager: endSettings\n");
         finish();
         return;
       default:
@@ -125,6 +123,8 @@ private:
         return new SettingsBluetoothPage;
       case gotoTestSettingsPage:
         return new SettingsTestPage;
+      case gotoDateTimeSettingsPage:
+        return new SettingsDateTimePage;
       default:
         return NULL;
     }

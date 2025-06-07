@@ -25,11 +25,9 @@ public:
 
     switch (choice) {
       case VirtualKey::VK_ESCAPE:
-        Serial.printf("SettingsSerialPortPage: Cancel . main page\n");
         return gotoMainSettingsPage;
       case VirtualKey::VK_a:
       case VirtualKey::VK_A:
-        Serial.printf("SettingsSerialPortPage: Save and exit/reset . main page\n");
         serialPortPreferences.save();
         serialPortPreferences.apply();
         return gotoMainSettingsPage;
@@ -75,6 +73,14 @@ public:
         break;
       case VirtualKey::VK_F:
         serialPortPreferences.selectPrevFlowControl();
+        render();
+        break;
+      case VirtualKey::VK_m:
+        serialPortPreferences.selectNextModemType();
+        render();
+        break;
+      case VirtualKey::VK_M:
+        serialPortPreferences.selectPrevModemType();
         render();
         break;
       case VirtualKey::VK_e:
@@ -136,18 +142,24 @@ private:
     terminal.write(serialPortPreferences.selectedFlowControlString());
     terminal.write(EC_CRLF);
 
+    terminal.write(EC_BLD "M" EC_NOF ". " EC_BLD "M" EC_NOF "odem type\t");
+    terminal.write(serialPortPreferences.selectedModemTypeString());
+    terminal.write(EC_CRLF);
+
     terminal.write(EC_CRLF);
 
     terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_CRLF EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF EC_CRLF);
     if (serialPortPreferences.needsReset) {
       terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and reset");
     }
     else {
       terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and go back");
     }
+
+    terminal.write(EC_CRLF EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF);
 
     terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
 
