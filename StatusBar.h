@@ -102,9 +102,16 @@ private:
     // Then restart processing the queue. It will execute all high priority stuff first, and then continue with 
     // normal priority stuff.
 
-    // Stop processing the queue
+    // Pause receiving of data for a short while. This is necessary because we are writing multiple Primitives
+    // to the primitive queue of the DisplayController. We change the GlyphOptions temporarily here, and we don't
+    // want to have any received data add Primitives in between because they will use the temporary GlyphOptions.
+    // The ESP32's UART has a 128 bytes receive buffer, so if we are fast enough here, we won't affect receive
+    //  speed (i.e. receive buffer will not fill and not cause actual pauses), or dropped characters due to buffer
+    // overflow. Hopefully.
+    serialPort.flowControl(false);
+    // Stop processing the Primitive queue
     terminal.canvas()->beginUpdate();
-    // Render the queue clean.
+    // Render the Primitive queue clean.
     terminal.canvas()->waitCompletion(false);
 
     fabgl::GlyphOptions glyphOptions;
@@ -117,9 +124,9 @@ private:
     terminal.canvas()->drawText(&font, 0, statusBar.statusBarRow * font.height, buffer);
     terminal.canvas()->setCanvasState(savedState);
 
-    // Render the queue clean again.
-    terminal.canvas()->waitCompletion(false);
-    // Re-enable processing the queue
+    // Re-enable receiving of data.
+    serialPort.flowControl(true);
+    // Re-enable processing the Primitive queue
     terminal.canvas()->endUpdate();
   }
  };
