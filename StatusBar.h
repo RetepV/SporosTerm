@@ -74,60 +74,16 @@ private:
     );
 
     fabgl::FontInfo font = terminal.font();
-
-    // We must write to the canvas in 'raw' mode, using drawText. But that does not support escape-codes. So we
-    // must set the glyphOptions ourself. However, the canvas has only one set of glyphOptions, and one renderqueue.
-    // So we must:
-    // 1. Stop the rendering queue, so that we take full control.
-    // 2. Finish any rendering stuff that is still in the queue.
-    // 3. Save the current glyphOptions.
-    // 4. Set our own glyphOptions.
-    // 5. Render our stuff.
-    // 6. Finish rendering our stuff.
-    // 7. Restore the saved glyphOptions.
-    // 8. Re-enable the queue.
-    //
-    // This is all quite elaborate. But the worst part is that it doesn't really work, I am seeing glyphOptions of
-    // the status bar appearing in the normal text area of the screen.
-    //
-    // I think the issue is that we don't want to queue to stop being processed, but want to *lock the queue for
-    // ourselves*, so that nothing can enter it (e.g. from a higher priority process) while the status bar is being
-    // rendered.
-    // But we probably can't lock it, as that might halt the other processes, leading to missed data. This would again
-    // be visible on the screen.
-    // Maybe the solution is to hack somewhat into the queue system. Maybe we can add a priority system, which causes
-    // higher priority things to be rendered before lower priority things.
-    // The status bar would then stop and empty the queue. Then add its stuff with a high priority. Anything added
-    // in the mean time (e.g. from an interrupt function), will go in the queue but not be rendered.
-    // Then restart processing the queue. It will execute all high priority stuff first, and then continue with 
-    // normal priority stuff.
-
-    // Pause receiving of data for a short while. This is necessary because we are writing multiple Primitives
-    // to the primitive queue of the DisplayController. We change the GlyphOptions temporarily here, and we don't
-    // want to have any received data add Primitives in between because they will use the temporary GlyphOptions.
-    // The ESP32's UART has a 128 bytes receive buffer, so if we are fast enough here, we won't affect receive
-    //  speed (i.e. receive buffer will not fill and not cause actual pauses), or dropped characters due to buffer
-    // overflow. Hopefully.
-    serialPort.flowControl(false);
-    // Stop processing the Primitive queue
-    terminal.canvas()->beginUpdate();
-    // Render the Primitive queue clean.
-    terminal.canvas()->waitCompletion(false);
-
+    
+    fabgl::RGB888 penColor = fabgl::RGB888(255, 255, 255);
+    fabgl::RGB888 brushColor = fabgl::RGB888(0, 0, 0);
+    
     fabgl::GlyphOptions glyphOptions;
     glyphOptions.value = 0;
     glyphOptions.fillBackground = 1;
     glyphOptions.invert = 1;
 
-    fabgl::CanvasState savedState = terminal.canvas()->getCanvasState();
-    terminal.canvas()->setGlyphOptions(glyphOptions);
-    terminal.canvas()->drawText(&font, 0, statusBar.statusBarRow * font.height, buffer);
-    terminal.canvas()->setCanvasState(savedState);
-
-    // Re-enable receiving of data.
-    serialPort.flowControl(true);
-    // Re-enable processing the Primitive queue
-    terminal.canvas()->endUpdate();
+    terminal.canvas()->drawTextWithOptions(&font, 0, statusBar.statusBarRow * font.height, buffer, false, glyphOptions, penColor, brushColor);
   }
  };
 
