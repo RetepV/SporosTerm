@@ -103,7 +103,7 @@ struct Peripherals {
   static void setupSerialPortTerminalConnector() {
     serialPortTerminalConnector.connect(&serialPort, &terminal);
   }
-    
+
   static void setupBT() {
 
     DisplayMode displayMode = displayPreferences.currentDisplayMode();

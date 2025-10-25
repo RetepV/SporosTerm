@@ -52,35 +52,5 @@ void setup() {
 static bool drawTerminalTest = false;
 
 void loop() {
-
-  // if (drawTerminalTest) {
-  //   for (int x = 10; x <= terminalModes[terminalMode].columns; x += 10) {
-  //     terminal->printf("         %1d", (x / 10) % 10);
-  //   }
-  //   terminal->printf("\r\n");
-  //   for (int x = 1; x <= terminalModes[terminalMode].columns; x++) {
-  //     terminal->printf("%1d", x % 10);
-  //   }
-  //   terminal->printf("\r\n");
-
-  //   for (int y = 3; y < terminalModes[terminalMode].rows; y++) {
-  //     terminal->printf("%2d        ", y);  
-  //     if (y < 11) {
-  //       for (int x = 0; x < 32; x++) {
-  //         char ch = (y - 3) * 32 + x;
-  //         terminal->print(printableChar(ch));
-  //       }
-  //     }
-
-  //     terminal->printf("\r\n");
-  //   }
-
-  //   terminal->printf("%2d Normal\x1b[1mBold\x1b[0mNormal\x1b[7mInverse", terminalModes[terminalMode].rows); 
-
-  //   drawTerminalTest = false;
-  // }
-
   vTaskDelete(NULL);
-
-  // delay(20);
 }

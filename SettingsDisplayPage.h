@@ -104,9 +104,6 @@ private:
     terminal.write(selectedDisplayMode.supportsBluetooth ? "yes" : "no");
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "isplay mode\t");
-    terminal.write(EC_CRLF EC_CRLF);
-
     terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
     terminal.write(EC_CRLF EC_CRLF);
 
