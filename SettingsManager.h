@@ -25,6 +25,8 @@ public:
 
   void show() {
 
+    serialPortTerminalConnector.disableSerialPortRX(true);
+
     originalBackgroundColor = terminal.getBackgroundColor();
     //terminal.setBackgroundColor(Color::black);
     
@@ -64,6 +66,8 @@ public:
 
     terminal.clear();
     terminal.write(EC_CON);
+
+    serialPortTerminalConnector.disableSerialPortRX(false);
   }
 
 private:
