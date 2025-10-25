@@ -103,15 +103,25 @@ private:
         terminal.write(scratchBuf);
       }
       else if (row == 9) {
-        terminal.write("Colors:  ");
+        terminal.write("    Colors:");
+      }
+      else if (row == 10) {
+        terminal.write("      ");
         for (uint8_t color = 30; color <= 37; color++) {
-          sprintf(scratchBuf, EC_NOF "[\e[%dmXX" EC_NOF "] ", color);
+          sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
           terminal.write(scratchBuf);          
         }
+        sprintf(scratchBuf, "\e[%dm", 32);        
+        terminal.write(scratchBuf);          
+      }
+      else if (row == 11) {
+        terminal.write("      ");
         for (uint8_t color = 90; color <= 97; color++) {
-          sprintf(scratchBuf, EC_NOF "[\e[%dmXX" EC_NOF "] ", color);
+          sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
           terminal.write(scratchBuf);          
         }
+        sprintf(scratchBuf, "\e[%dm", 32);        
+        terminal.write(scratchBuf);          
       }
 
       terminal.write(EC_CRLF);
