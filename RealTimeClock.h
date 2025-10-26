@@ -86,7 +86,7 @@ public:
 
   void writeTime(time_t time) {
 
-    // Don't touch clockFunctionData[0]
+    // Don't touch clockFunctionData[0], use what was read the last time.
     clockFunctionData[1] = time & 0xff;
     clockFunctionData[2] = (time >> 8) & 0xFF;
     clockFunctionData[3] = (time >> 16) & 0xFF;
@@ -111,6 +111,7 @@ public:
       clockFunctionData[index] = oneWire->read();
     }
 
+    // clockFunctionData is the status register, leave the rest alone.
     clockFunctionData[0] = update(clockFunctionData[0]);
 
     oneWire->reset();
