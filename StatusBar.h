@@ -51,7 +51,8 @@ private:
       "%c%s"
       "%c%s"
       "%c%s"
-      "                  "      // 28 spaces, can we do this nicer?
+      "              "      // 24 spaces (can we do this nicer?)
+      "%c%3s"
       "%c%3s"
       "%c%3s"
       "%c%6d,%c,%1d,%1d.%1d"
@@ -62,6 +63,7 @@ private:
       STATUSBAR_DELIM, terminal.keyboard()->isCapsLock() ? "CAP" : "cap",
       STATUSBAR_DELIM, terminal.keyboard()->isNumLock() ? "NUM" : "num",
       STATUSBAR_DELIM, terminal.keyboard()->isScrollLock() ? "SCR" : "scr",
+      STATUSBAR_DELIM, serialPort.BRKStatus() ? "BRK" : "   ",
       STATUSBAR_DELIM, serialPortPreferences.currentModemTypeShortString(),
       STATUSBAR_DELIM, serialPortPreferences.currentFlowControlShortString(),
       STATUSBAR_DELIM,

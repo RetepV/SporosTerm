@@ -89,6 +89,14 @@ struct Peripherals {
           else {
             settingsManager.show();
           }
+          item->vk = VirtualKey::VK_NONE;
+        } else if (item->vk == VirtualKey::VK_BREAK) {
+          // BREAK (CTRL PAUSE) -> short break (TX low for 233 ms)
+          // SHIFT BREAK (SHIFT CTRL PAUSE) -> long break (TX low for 3.5 s)
+          serialPort.sendBreak(true);
+          vTaskDelay((item->SHIFT ? 3500 : 233) / portTICK_PERIOD_MS);
+          serialPort.sendBreak(false);
+          item->vk = VirtualKey::VK_NONE;
         }
       }
     };
