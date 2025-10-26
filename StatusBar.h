@@ -77,8 +77,8 @@ private:
 
     fabgl::FontInfo font = terminal.font();
     
-    fabgl::RGB888 penColor = fabgl::RGB888(255, 255, 255);
-    fabgl::RGB888 brushColor = fabgl::RGB888(0, 0, 0);
+    fabgl::RGB888 penColor = Color::White;
+    fabgl::RGB888 brushColor = Color::Black;
     
     fabgl::GlyphOptions glyphOptions;
     glyphOptions.value = 0;

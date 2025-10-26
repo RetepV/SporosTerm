@@ -75,7 +75,7 @@ struct Peripherals {
     terminal.setTerminalType(TermType::ANSI_VT);
     terminal.keyboard()->setLayout(&fabgl::USLayout);
     terminal.setBackgroundColor(Color::Black);
-    terminal.setForegroundColor(Color::Yellow);
+    terminal.setForegroundColor(Color::White);
     terminal.enableCursor(true);
 
     terminal.loadFont(displayMode.font);
