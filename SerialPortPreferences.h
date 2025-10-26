@@ -19,7 +19,7 @@ extern SerialPortPreferences serialPortPreferences;
 #define UART_CTS      35
 
 #define DEFAULT_UART_INDEX    2
-#define DEFAULT_UART_BAUD     2400
+#define DEFAULT_UART_BAUD     9600
 #define DEFAULT_UART_BITS     8
 #define DEFAULT_UART_PARITY   'N'
 #define DEFAULT_UART_STOPBITS 1.0
