@@ -5,7 +5,7 @@
 class DisplayPreferences;
 extern DisplayPreferences displayPreferences;
 
-#define NUM_DISPLAYMODES      8
+#define NUM_DISPLAYMODES      12
 
 #define DEFAULT_DISPLAYMODE   0
 
@@ -77,6 +77,55 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     350,
     false,
     true
+  },
+
+  {
+    "640x350 70Hz",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x14,
+    16,
+    80,
+    24,
+    640,
+    350,
+    true,
+    false
+  },
+  {
+    "640x350 70Hz",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x14,
+    16,
+    80,
+    25,
+    640,
+    350,
+    false,
+    false
+  },
+  {
+    "640x350 70Hz",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x7,
+    16,
+    80,
+    48,
+    640,
+    350,
+    true,
+    false
+  },
+  {
+    "640x350 70Hz",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x7,
+    16,
+    80,
+    50,
+    640,
+    350,
+    false,
+    false
   },
 
   {
