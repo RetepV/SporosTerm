@@ -11,7 +11,7 @@ For building, you will need:
 
 * Arduino development environment, set up with ESP32 support. You can get that from here: https://github.com/espressif/arduino-esp32
 * My own patched version of the FabGL library. You can get that from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S, download it as a .ZIP file.
-Note that you should not use the FabGL `main` branch, but the `FabGL-nTerm2-S` branch. This has the fixes and extensions necessary to make SporoSterm work.
+Note that you should not use the FabGL `main` branch, but the `FabGL-nTerm2-S` branch. This has the fixes and extensions necessary to make SporosTerm work.
 * The code from this repository.
 
 Steps:
