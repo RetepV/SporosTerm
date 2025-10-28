@@ -10,14 +10,16 @@ This is a quick description of how to build and deploy this application using th
 You will need:
 
 * Arduino development environment, set up with ESP32 support. You can get that from here: https://github.com/espressif/arduino-esp32
-* My own patched version of the FabGL library. You can get that from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S. Note that you will not use the FabGL `main` branch, but the `FabGL-nTerm2-S` branch. This has the fixes and extensions necessary to make SporoSterm work.
-* This code.
+* My own patched version of the FabGL library. You can get that from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S, download it as a .ZIP file.
+Note that you should not use the FabGL `main` branch, but the `FabGL-nTerm2-S` branch. This has the fixes and extensions necessary to make SporoSterm work.
+* The code from this repository.
 
 Steps:
 
-1. Download the latest Arduino development environment.
+1. MAke sure to be on the latest Arduino development environment.
 2. Follow the instructions at https://github.com/espressif/arduino-esp32 to install the ESP32 board support.
-3. After having installed the ESP32 board support, you will have to open the Arduino Boards Manager and find the entry 'esp32 by Espressif Systems'. Here, you will have to switch your installed version (probably `3.3.2` at this moment) to version `2.0.17`. It is absolutely necessary to downgrade to 2.0.17, in order to compile the FabGL library.
+3. After having installed the ESP32 board support, you will have to open the Arduino Boards Manager and find the entry 'esp32 by Espressif Systems'. Here, you will have to switch your installed version (probably `3.3.2` or later) to version `2.0.17`.
+__It is absolutely necessary to downgrade to 2.0.17, in order to compile the FabGL library.__
 4. Download the patched FabGL library's source code from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S. Doublecheck if you have the `FabGL-nTerm2-S` branch selected. Download the source code as a .zip file, it will probably be named `FabGL-FabGL-nTerm2-S.zip`.
 5. Download the SporosTerm source code and then open SporosTerm.ino in the Arduino development environment.
 6. In the Arduino development environment, go to Sketch->Include Library->Add .ZIP Library. Select the `FabGL-FabGL-nTerm2-S.zip` file, wait until Arduino finishes processing and tells that the library was installed successfully.
