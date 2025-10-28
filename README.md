@@ -5,7 +5,7 @@ This works with the FabGL library, but only a patched version which can be found
 
 # How to build
 
-This is a quick description of how to build and deploy this application using the Arduino environment. I have provided binaries to upload to the nTerm2-S, which means that you should not have to build this code by yourself, but you might want to.
+This is a quick description of how to build and deploy this application using the Arduino environment. I have provided binaries to upload to the nTerm2-S, which means that you should not have to build this code by yourself, but you might want to. You can find the binaries here: https://github.com/RetepV/SporosTerm/releases.
 
 You will need:
 
