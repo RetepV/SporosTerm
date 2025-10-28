@@ -7,7 +7,7 @@ This works with the FabGL library, but only a patched version which can be found
 
 This is a quick description of how to build and deploy this application using the Arduino environment. I have provided binaries to upload to the nTerm2-S, which means that you should not have to build this code by yourself, but you might want to. You can find the binaries here: https://github.com/RetepV/SporosTerm/releases.
 
-You will need:
+For building, you will need:
 
 * Arduino development environment, set up with ESP32 support. You can get that from here: https://github.com/espressif/arduino-esp32
 * My own patched version of the FabGL library. You can get that from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S, download it as a .ZIP file.
@@ -16,7 +16,7 @@ Note that you should not use the FabGL `main` branch, but the `FabGL-nTerm2-S` b
 
 Steps:
 
-1. MAke sure to be on the latest Arduino development environment.
+1. Make sure to be on the latest Arduino development environment.
 2. Follow the instructions at https://github.com/espressif/arduino-esp32 to install the ESP32 board support.
 3. After having installed the ESP32 board support, you will have to open the Arduino Boards Manager and find the entry 'esp32 by Espressif Systems'. Here, you will have to switch your installed version (probably `3.3.2` or later) to version `2.0.17`.
 __It is absolutely necessary to downgrade to 2.0.17, in order to compile the FabGL library.__
