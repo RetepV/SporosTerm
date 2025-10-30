@@ -78,6 +78,11 @@ public:
         terminalPreferences.toggleReverseWrapAround();
         render();
         break;
+      case VirtualKey::VK_h:
+      case VirtualKey::VK_H:
+        terminalPreferences.toggleHideSignonLogo();
+        render();
+        break;
     }
     
     return noFurtherAction;
@@ -127,6 +132,10 @@ private:
 
     terminal.write(EC_BLD "R" EC_NOF ". " EC_BLD "R" EC_NOF "everse wrap around\t");
     terminal.write(terminalPreferences.selectedReverseWrapAround ? "wrap" : "no wrap");
+    terminal.write(EC_CRLF EC_CRLF);
+
+    terminal.write(EC_BLD "H" EC_NOF ". " EC_BLD "H" EC_NOF "ide signon screen at startup\t");
+    terminal.write(terminalPreferences.selectedHideSignonLogo ? "hide signon screen" : "show signon screen");
     terminal.write(EC_CRLF EC_CRLF);
 
     terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");

@@ -31,9 +31,9 @@ public:
 
     terminal.write(EC_CRLF EC_CRLF EC_CRLF EC_CRLF EC_DWI EC_ULN "ABOUT" EC_NOF EC_CRLF EC_CRLF);
 
-    terminal.write("SporosTerm V0.2" EC_CRLF);
-    terminal.write("Copyright " EC_COPR " 2025 Peter de Vroomen" EC_CRLF EC_CRLF);
-    terminal.write("Uses the FabGL library, Copyright " EC_COPR " 2019-2022 Fabrizio Di Vittorio." EC_CRLF EC_CRLF);
+    terminal.write("SporosTerm v" EC_STR(VERSION_NUMBER) EC_CRLF);
+    terminal.write("Copyright " EC_COPR " 2025 Sporos Tech, Peter de Vroomen" EC_CRLF EC_CRLF);
+    terminal.write("Using the FabGL library, Copyright " EC_COPR " 2019-2022 Fabrizio Di Vittorio." EC_CRLF EC_CRLF);
     terminal.write("Many thanks to Fabrizio Di Vittorio and Just4Fun!");
 
     terminal.write(EC_ETX);

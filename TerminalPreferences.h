@@ -16,6 +16,7 @@ extern TerminalPreferences terminalPreferences;
 #define DEFAULT_NEWLINE_MODE              true
 #define DEFAULT_WRAPAROUND                true
 #define DEFAULT_REVERSE_WRAPAROUND        true
+#define DEFAULT_HIDE_SIGNON_LOGO          false
 
 class TerminalPreferences {
   
@@ -35,6 +36,7 @@ public:
   const char *prefBackspaceStyleKey     = "BS";         // TRUE: BS, FALSE: DEL
   const char *prefWrapAroundKey         = "WA";         // TRUE: text wrap around, FALSE: text does not wrap.
   const char *prefReverseWrapAroundKey  = "RW";         // TRUE: text reverse wrap around, FALSE: text does not reverse wrap
+  const char *prefHideSignonLogoKey     = "HS";         // TRUE: text reverse wrap around, FALSE: text does not reverse wrap
 
   bool currentNewLineMode;
   bool selectedNewLineMode;
@@ -54,6 +56,8 @@ public:
   bool selectedWrapAround;
   bool currentReverseWrapAround;
   bool selectedReverseWrapAround;
+  bool currentHideSignonLogo;
+  bool selectedHideSignonLogo;
   
   bool needsReset = false;
 
@@ -93,6 +97,8 @@ public:
     selectedWrapAround = currentWrapAround;
     currentReverseWrapAround = preferences.getBool(prefReverseWrapAroundKey);
     selectedReverseWrapAround = currentReverseWrapAround;
+    currentHideSignonLogo = preferences.getBool(prefHideSignonLogoKey);
+    selectedHideSignonLogo = currentHideSignonLogo;
   }
 
   void save() {
@@ -108,6 +114,7 @@ public:
     preferences.putBool(prefBackspaceStyleKey, selectedBackspaceStyle);
     preferences.putBool(prefWrapAroundKey, selectedWrapAround);
     preferences.putBool(prefReverseWrapAroundKey, selectedReverseWrapAround);
+    preferences.putBool(prefHideSignonLogoKey, selectedHideSignonLogo);
 
     preferences.putInt(prefVersionKey, preferencesVersion);
 
@@ -149,6 +156,9 @@ public:
     }
     if (!preferences.isKey(prefReverseWrapAroundKey)) {
       preferences.putBool(prefReverseWrapAroundKey, DEFAULT_REVERSE_WRAPAROUND);
+    }
+    if (!preferences.isKey(prefHideSignonLogoKey)) {
+      preferences.putBool(prefHideSignonLogoKey, DEFAULT_HIDE_SIGNON_LOGO);
     }
 
     preferences.putInt(prefVersionKey, preferencesVersion);
@@ -234,6 +244,10 @@ public:
 
   void toggleReverseWrapAround() {
     selectedReverseWrapAround = !selectedReverseWrapAround;
+  }
+
+  void toggleHideSignonLogo() {
+    selectedHideSignonLogo = !selectedHideSignonLogo;
   }
 };
 
