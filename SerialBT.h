@@ -1,4 +1,4 @@
-#include "BluetoothSerial.h"
+#include "BluetoothSerialPatched.h"
 #include "esp_spp_api.h"
 #include "esp_bt.h"
 
@@ -7,18 +7,17 @@
 // NOTE: BluetoothSerial also manages queues, and use send/recieve 32/512 sizes. Maybe we can make our queues
 //       a lot smaller. They are only necessary because we need to cross thread boundaries.
 
-// The send queue can be small, as we can expect our BT connected device to be fast enough to pull the data from the queue.
-#define SERIAL_QUEUE_SIZE         64
-#define SERIAL_QUEUE_LOW_WATER    (int)((SERIAL_QUEUE_SIZE / 100) * 10)         // 10% low water mark
-#define SERIAL_QUEUE_HIGH_WATER   (int)((SERIAL_QUEUE_SIZE / 100) * 90)         // 90% high water mark
-// The receive queue, though, should be a bunch larger as on low baud rates, we will not consume the queue fast enough.
-// TODO: If Xon and Xoff actually works on the Bluetooth serial connection, then this can be a lot shorter.
-#define BLUETOOTH_QUEUE_SIZE 1024
-#define BLUETOOTH_QUEUE_LOW_WATER    (int)((BLUETOOTH_QUEUE_SIZE / 100) * 10)   // 10% low water mark
-#define BLUETOOTH_QUEUE_HIGH_WATER   (int)((BLUETOOTH_QUEUE_SIZE / 100) * 90)   // 90% low water mark
 
-#define TASK_STACK_SIZE         2048      // I really have no clue how large it should be, make it 1024. Note that this is 2KB, i.e. 1024 words.
-#define TASK_PRIORITY           1         // Idle task is 0, so set to 1
+#define SEND_TO_SERIAL_QUEUE_SIZE             512
+#define SEND_TO_SERIAL_QUEUE_LOW_WATER        (int)((SEND_TO_SERIAL_QUEUE_SIZE / 100) * 20)       // 20% low water mark
+#define SEND_TO_SERIAL_QUEUE_HIGH_WATER       (int)((SEND_TO_SERIAL_QUEUE_SIZE / 100) * 80)       // 80% high water mark
+
+#define SEND_TO_BLUETOOTH_QUEUE_SIZE          512
+#define SEND_TO_BLUETOOTH_QUEUE_LOW_WATER     (int)((SEND_TO_BLUETOOTH_QUEUE_SIZE / 100) * 10)    // 20% low water mark
+#define SEND_TO_BLUETOOTH_QUEUE_HIGH_WATER    (int)((SEND_TO_BLUETOOTH_QUEUE_SIZE / 100) * 90)    // 80% low water mark
+
+#define TASK_STACK_SIZE         4096          // At 1024 I saw frequent crashes. At 2048 I saw occasional crashes. They went away once I made it 4096. But to be honest, I don't know why it needs to be this big.
+#define TASK_PRIORITY           10            // Idle task is 0, so set to 1
 
 class SerialBT;
 extern SerialBT serialBT;
@@ -30,61 +29,58 @@ class SerialBT {
 #endif
 
 public:
-  QueueHandle_t serialReceivedQueue;
-  QueueHandle_t bluetoothReceivedQueue;
+  QueueHandle_t sendToSerialQueueHandle;
+  QueueHandle_t sendToBluetoothQueueHandle;
 
-  TaskHandle_t sendToSerialTask;
-  TaskHandle_t sendToBluetoothTask;
+  TaskHandle_t sendToSerialTaskHandle;
+  TaskHandle_t sendToBluetoothTaskHandle;
+
+  bool serialHostPaused;
+  bool bluetoothHostPaused;
 
   // Attempt to use Xon/Xoff to manage Bluetooth connection data overruns
   static const byte btXon = 0x17;
   static const byte btXoff = 0x19;
 
-  bool serialPaused;
-  bool bluetoothPaused;
-
 public:
 
   void startProxying() {
 
-    serialReceivedQueue = xQueueCreate(SERIAL_QUEUE_SIZE, sizeof(uint8_t));
-    bluetoothReceivedQueue = xQueueCreate(BLUETOOTH_QUEUE_SIZE, sizeof(uint8_t));
+    sendToSerialQueueHandle = xQueueCreate(SEND_TO_SERIAL_QUEUE_SIZE, sizeof(uint8_t));
+    sendToBluetoothQueueHandle = xQueueCreate(SEND_TO_BLUETOOTH_QUEUE_SIZE, sizeof(uint8_t));
 
-    // terminal.userOnReceive is called whenever data is received on the serial port. We want to send it over Bluetooth.
+    // terminal.userOnReceive is called whenever data is received on the serial port. We want to send it to Bluetooth.
     terminal.userOnReceive =  [&](uint8_t c) {
 
-      // NOTE: If the queue is not emptied fast enough, for now we will drop the characters.
-      //       Nicer would be if we would pause the sender (serial device) until the queue is empty again.
-      //       But that's for later.
-
-      if (!serialBT.serialPaused && (uxQueueSpacesAvailable(serialBT.serialReceivedQueue) < SERIAL_QUEUE_LOW_WATER)) {
-        // Low water mark reached, pause the sender.
+      if (!serialBT.serialHostPaused && (uxQueueSpacesAvailable(serialBT.sendToBluetoothQueueHandle) < SEND_TO_BLUETOOTH_QUEUE_LOW_WATER)) {
+        // Serial.printf(">BQ: LW %d<%d pause SER rcv\n", uxQueueSpacesAvailable(serialBT.sendToBluetoothQueueHandle), SEND_TO_BLUETOOTH_QUEUE_LOW_WATER);
+        // Low water mark is reached on the sendToBluetoothQueue. Pause the incoming data (serial port) until the sendToBluetoothQueue becomes available again.
         serialPort.flowControl(false);
-        serialBT.serialPaused = true;
+        serialBT.serialHostPaused = true;
       }
 
-      xQueueSend(serialReceivedQueue, &c, (TickType_t)10);
-  };
+      // Serial.printf(">BQ %02X\n", c);
+      xQueueSend(sendToBluetoothQueueHandle, &c, (TickType_t)10);
+    };
 
-    serialPaused = false;
-    bluetoothPaused = false;
+    serialHostPaused = false;
+    bluetoothHostPaused = false;
 
-    xTaskCreate(sendBytesToSerialTask, "SND2SER", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToSerialTask);
-    xTaskCreate(sendBytesToBluetoothTask, "SND2BT", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToBluetoothTask);
+    xTaskCreate(sendBytesToSerialTask, "SND2SER", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToSerialTaskHandle);
+    xTaskCreate(sendBytesToBluetoothTask, "SND2BT", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToBluetoothTaskHandle);
   }
 
   void stopProxying() {
 
       terminal.userOnReceive =  [&](uint8_t c) {};
 
-      vTaskDelete(sendToSerialTask);
-      vTaskDelete(sendToBluetoothTask);
+      vTaskDelete(sendToSerialTaskHandle);
+      vQueueDelete(sendToSerialQueueHandle);
+      sendToSerialQueueHandle = NULL;
 
-      vQueueDelete(serialReceivedQueue);
-      vQueueDelete(bluetoothReceivedQueue);
-
-      serialReceivedQueue = NULL;
-      bluetoothReceivedQueue = NULL;
+      vTaskDelete(sendToBluetoothTaskHandle);
+      vQueueDelete(sendToBluetoothQueueHandle);
+      sendToBluetoothQueueHandle = NULL;
   }
 
   static void onBTEventReceived(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
@@ -101,16 +97,23 @@ public:
       serialBT.stopProxying();
     }
     else if (event == ESP_SPP_DATA_IND_EVT) {
+
+      // Received characters from Bluetooth, put them in the sendToSerialQueue.
+
       for (int index = 0;index < param->data_ind.len; index++) {
 
         uint8_t c = param->data_ind.data[index];
 
-        if (!serialBT.bluetoothPaused && (uxQueueSpacesAvailable(serialBT.bluetoothReceivedQueue) < BLUETOOTH_QUEUE_LOW_WATER)) {
-          // Low water mark reached, pause the sender.
+        // If the sendToSerialQueue is close to full, pause the Bluetooth.
+        if (!serialBT.bluetoothHostPaused && (uxQueueSpacesAvailable(serialBT.sendToSerialQueueHandle) < SEND_TO_SERIAL_QUEUE_LOW_WATER)) {
+          // Serial.printf(">SQ: LW %d<%d pause BT rcv\n", uxQueueSpacesAvailable(serialBT.sendToSerialQueueHandle), SEND_TO_SERIAL_QUEUE_LOW_WATER);
+          // Low water mark is reached on the sendToSerialQueue. Pause the incoming data (bluetooth) until the sendToSerialQueue becomes available again.
           bluetoothSerial.write(btXoff);
-          serialBT.bluetoothPaused = true;
+          serialBT.bluetoothHostPaused = true;
         }
-        xQueueSend(serialBT.bluetoothReceivedQueue, &c, (TickType_t)10);
+
+        // Serial.printf(">SQ %02X\n", c);
+        xQueueSend(serialBT.sendToSerialQueueHandle, &c, (TickType_t)10);
       }
     }
     else if (event == ESP_SPP_WRITE_EVT) {
@@ -121,50 +124,40 @@ public:
     }
   }
 
+  // Read events from the sendToSerialQueueHandle, send data to serial port.
   static void sendBytesToSerialTask( void * pvParameters ) {
+    char receivedByte;
+    TickType_t waitPeriod;
+
+    // Serial.printf("sendBytesToSerialTask, start listening to sendToSerialQueueHandle\n");
 
     for (;;) {
-      char receivedByte;
 
       // Sleep indefinitely until we have received something from Bluetooth.
       // TODO: Is serialPort.send() thread safe?
 
-      if (xQueueReceive(serialBT.bluetoothReceivedQueue, &receivedByte, portMAX_DELAY) == pdPASS) {
+      if (xQueueReceive(serialBT.sendToSerialQueueHandle, &receivedByte, portMAX_DELAY) == pdPASS) {
 
-        if (serialBT.serialPaused && (uxQueueSpacesAvailable(serialBT.serialReceivedQueue) > SERIAL_QUEUE_HIGH_WATER)) {
-          serialPort.flowControl(false);
-          serialBT.serialPaused = false;
-        }
-
-        serialPort.send(receivedByte);
-      }
-    }
-  }
-
-
-  static void sendBytesToBluetoothTask( void * pvParameters ) {
-
-    for (;;) {
-      char receivedByte;
-      TickType_t waitPeriod;
-
-      // Sleep indefinitely until we have received something from Bluetooth.
-      // TODO: Is serialPort.send() thread safe?
-
-      if (xQueueReceive(serialBT.serialReceivedQueue, &receivedByte, portMAX_DELAY) == pdPASS) {
-
-        if (serialBT.bluetoothPaused && (uxQueueSpacesAvailable(serialBT.bluetoothReceivedQueue) > BLUETOOTH_QUEUE_HIGH_WATER)) {
-          // Low water mark reached, pause the sender.
+        if (serialBT.bluetoothHostPaused && (uxQueueSpacesAvailable(serialBT.sendToSerialQueueHandle) > SEND_TO_SERIAL_QUEUE_HIGH_WATER)) {
+          // Serial.printf(">SP: HW %d>%d resume BT rcv\n", uxQueueSpacesAvailable(serialBT.sendToSerialQueueHandle), SEND_TO_SERIAL_QUEUE_HIGH_WATER);
+          // High water mark is reached after we had reached the low water mark earlier, so unpause Bluetooth.
           bluetoothSerial.write(btXon);
-          serialBT.bluetoothPaused = false;
+          serialBT.bluetoothHostPaused = false;
         }
 
-        bluetoothSerial.write(receivedByte);
+        // Serial.printf(">SP %02X\n", receivedByte);
+        serialPort.send(receivedByte);
 
-        // Check if we need to do a send delay.
+        // After we sent the byte, we might want to do a send delay to give really old systems without
+        // flow control some time to process.
+        // There is a long wait and a short wait.
+        // The long wait is executed after we sent a CR. The idea here is that after a CR the host system
+        // probably wants to do some processing and will need time for that.
+        // The short wait is executed after any other letter. The idea here is that the system will not have
+        // to take so much time to process what a user would type.
 
         if (bluetoothPreferences.isSendDelayEnabled()) {
-                    // If the byte is a carriage return, we have to wait the long wait, otherwise the short wait.
+          // If the byte is a carriage return, we wait the long wait, otherwise the short wait.
           if (receivedByte == 0x0D) {
             waitPeriod = pdMS_TO_TICKS(bluetoothPreferences.sendDelayForLine());
           }
@@ -178,18 +171,49 @@ public:
     }
   }
 
+  static void sendBytesToBluetoothTask( void * pvParameters ) {
+    char receivedByte;
+
+    // Serial.printf("sendBytesToBluetoothTask, start listening to sendToBluetoothQueueHandle\n");
+
+    for (;;) {
+      if (xQueueReceive(serialBT.sendToBluetoothQueueHandle, &receivedByte, portMAX_DELAY) == pdPASS) {
+
+        // If sendToBluetoothPaused, it means that the serial incoming data is paused because previously our sendToBluetoothQueue was almost full.
+        if (serialBT.serialHostPaused && (uxQueueSpacesAvailable(serialBT.sendToBluetoothQueueHandle) > SEND_TO_BLUETOOTH_QUEUE_HIGH_WATER)) {
+          // Serial.printf(">BT: HW %d>%d resume SER rcv\n", uxQueueSpacesAvailable(serialBT.sendToBluetoothQueueHandle), SEND_TO_BLUETOOTH_QUEUE_HIGH_WATER);
+          // High water mark is reached after we had reached the low water mark earlier, so unpause serial.
+          serialPort.flowControl(true);
+          serialBT.serialHostPaused = false;
+        }
+
+        // Serial.printf(">BT %02X\n", receivedByte);
+        bluetoothSerial.write(receivedByte);
+      }
+    }
+  }
+
+  // We're just taking over the sent pin code and replying confirmation. To be honest, I think this is simply
+  // the same a legacy authentication.
   static void onConfirmRequest(uint32_t num_val) {
-    // Just confirm the request.
+    char pinCode[17];
+    sprintf(pinCode, "%lu", num_val);
+    //Serial.printf("onConfirmRequest(%d) '%s' (%d)\n", num_val, pinCode, strlen(pinCode));
+    bluetoothSerial.setPin(pinCode, strlen(pinCode));
     bluetoothSerial.confirmReply(true);
   }
 
-  static void onAuthComplete(bool success) {
+  static void onKeyRequest(void) {
+    //Serial.printf("onKeyRequest\n");
+    bluetoothSerial.respondPasskey(1234);
   }
+
   void setup() {
 
+    // bluetoothSerial.disableSSP();
     bluetoothSerial.onConfirmRequest(onConfirmRequest);
-    bluetoothSerial.onAuthComplete(onAuthComplete);
-    bluetoothSerial.enableSSP();
+    bluetoothSerial.onKeyRequest(onKeyRequest);
+    bluetoothSerial.enableSSP(true, true);
     bluetoothSerial.begin("nTerm2-S");
     bluetoothSerial.register_callback(onBTEventReceived);
   }

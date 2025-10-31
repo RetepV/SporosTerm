@@ -124,7 +124,7 @@ struct Peripherals {
       esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
     }
     else {
-      esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+      esp_bt_mem_release(ESP_BT_MODE_BTDM);
     }
   }
 
