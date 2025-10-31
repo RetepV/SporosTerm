@@ -36,6 +36,21 @@ public:
     terminal.write("Using the FabGL library, Copyright " EC_COPR " 2019-2022 Fabrizio Di Vittorio." EC_CRLF EC_CRLF);
     terminal.write("Many thanks to Fabrizio Di Vittorio and Just4Fun!");
 
+    terminal.write(EC_SETSPRITE(0,"H",0,0,0));
+    terminal.write(EC_ALLOCSPRITES(0));
+
+    terminal.write(EC_ALLOCSPRITES(1));
+    terminal.write(EC_DEFSPRITECOL(0,64,20,"M",255,255,255,SPOROS_TECH_MONO_LOGO_DATA));
+
+    // This is drama right here, caused by Arduino's way of concatenating all files so that you have to do everything in header files.
+    // There is a circular dependency that we can't break. So we need to get the status bar height as the terminal font and add some.
+    int spriteXPos = displayPreferences.currentDisplayMode().xRes - 65;
+    int spriteYPos = displayPreferences.currentDisplayMode().yRes - 21 - (displayPreferences.currentDisplayMode().enableStatusBar ? terminal.font().height + 3 : 3);
+    char scratch[32];
+
+    sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", spriteXPos, spriteYPos);
+    terminal.write(scratch);
+
     terminal.write(EC_ETX);
   }
 
@@ -47,6 +62,9 @@ public:
 
     switch (choice) {
       case VirtualKey::VK_ESCAPE:
+        terminal.write(EC_SETSPRITE(0,"H",0,0,0));
+        terminal.write(EC_ALLOCSPRITES(0));
+
         return endSettings;
       case VirtualKey::VK_p:
       case VirtualKey::VK_P:

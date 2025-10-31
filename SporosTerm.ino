@@ -105,21 +105,34 @@ void renderSignon() {
 }
 
 void renderLogoAnimation() {
+
+  int finalSpriteXPos = 288;
+  int finalSpriteYPos = 124;
+
+  if (displayPreferences.currentDisplayMode().xRes == 800) {
+    finalSpriteXPos = 368;
+  }
+  if (displayPreferences.currentDisplayMode().yRes == 480) {
+    finalSpriteXPos = 170;
+  }
+
   terminal.write(EC_ALLOCSPRITES(1));
   terminal.write(EC_DEFSPRITECOL(0,64,20,"M",255,255,255,SPOROS_TECH_MONO_LOGO_DATA));
 
-  int animXValues[124];
-  for (double y = 0; y < 124; y++) {
-    animXValues[123 - (int)y] = (int)(288 + sin(y / 9.0) * 20);
+  int animXValues[finalSpriteYPos];
+  char scratch[32];
+
+  for (double y = 0; y < finalSpriteYPos; y++) {
+    animXValues[(finalSpriteYPos -1) - (int)y] = (int)(finalSpriteXPos + sin(y / 9.0) * 20);
   }
 
-  char scratch[32];
-  for (int y = 0; y < 124; y++) {
+  for (int y = 0; y < finalSpriteYPos; y++) {
     sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", animXValues[y], y);
     terminal.write(scratch);
     vTaskDelay(20);
   }
-  terminal.write(EC_SETSPRITE(0,"V",0,288,124));  
+  sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", finalSpriteXPos, finalSpriteYPos);
+  terminal.write(scratch);  
 }
 
 static bool drawTerminalTest = false;
