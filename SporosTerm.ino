@@ -1,7 +1,7 @@
 
 #include "fabgl.h"
 #include "TerminalEscapeCodeDefines.h"
-#include "BluetoothSerial.h"
+#include "BluetoothSerialPatched.h"
 
 #define VERSION_NUMBER    0.2
 
@@ -12,7 +12,7 @@ fabgl::TerminalController           TerminalController(&terminal);
 fabgl::SerialPort                   serialPort;
 fabgl::SerialPortTerminalConnector  serialPortTerminalConnector;
 
-BluetoothSerial                     bluetoothSerial;
+BluetoothSerialPatched              bluetoothSerial;
 
 #include "SerialPortPreferences.h"
 #include "TerminalPreferences.h"
