@@ -3,7 +3,7 @@
 #include "TerminalEscapeCodeDefines.h"
 #include "BluetoothSerialPatched.h"
 
-#define VERSION_NUMBER    0.2
+#define VERSION_NUMBER    0.3
 
 fabgl::PS2Controller                ps2Controller;
 fabgl::BaseDisplayController        *displayController;
@@ -43,6 +43,7 @@ void setup() {
   Peripherals::setupDisplayController();
   Peripherals::setupTerminal();
   Peripherals::setupSerialPortTerminalConnector();
+  disableTerminal();
   Peripherals::setupBT();
   Peripherals::setupStatusBar();
   Peripherals::setupSerialPort();
@@ -53,7 +54,6 @@ void setup() {
     enableTerminal();
   }
   else {
-    disableTerminal();
     renderSignon();
     renderLogoAnimation();
     enableTerminalOnKeypress();
