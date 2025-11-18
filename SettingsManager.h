@@ -5,7 +5,7 @@
 #include "SettingsTerminalPage.h"
 #include "SettingsDisplayPage.h"
 #include "SettingsBluetoothPage.h"
-#include "SettingsTestPage.h"
+#include "SettingsCapabilitiesPage.h"
 #include "SettingsDateTimePage.h"
 
 #pragma once
@@ -75,7 +75,6 @@ private:
   SettingsManagerPage *currentPage = NULL;
   Color               originalBackgroundColor = Color::Black;
   bool                interactive = true;
-  fabgl::FontInfo     orgFont;
 
   bool handleSpecialCharacters(uint8_t value) {
 
@@ -125,8 +124,8 @@ private:
         return new SettingsDisplayPage;
       case gotoBluetoothSettingsPage:
         return new SettingsBluetoothPage;
-      case gotoTestSettingsPage:
-        return new SettingsTestPage;
+      case gotoCapabilitiesPage:
+        return new SettingsCapabilitiesPage;
       case gotoDateTimeSettingsPage:
         return new SettingsDateTimePage;
       default:

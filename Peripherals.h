@@ -15,8 +15,6 @@
 #define RTC_ONEWIRE                       14
 #define RTC_INT                           36             
 
-#define AMBER_COLOR RGB888(255,192,0)
-
 void memoryReport(const char *marker) {
   Serial.printf("[%s] Total free: %d, maximum allocatable: %d\n", marker, heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
 }
@@ -39,6 +37,9 @@ struct Peripherals {
   }
 
   static void setupDisplayController() {
+
+    memoryReport("Display setup starts");
+
     DisplayMode displayMode = displayPreferences.currentDisplayMode();
 
     if (displayMode.supportsBluetooth) {
@@ -48,6 +49,16 @@ struct Peripherals {
       esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
     }
     
+    Serial.printf("[Display] Setting resolution: (%d,%d), columns and rows: (%d,%d), colors: %d, statusbar: %s, bluetooth: %s, mode: %s\n", 
+      displayMode.xRes,
+      displayMode.yRes,
+      displayMode.columns, 
+      displayMode.rows, 
+      displayMode.colors, 
+      displayMode.enableStatusBar ? "YES" : "NO", 
+      displayMode.supportsBluetooth ? "YES" : "NO", 
+      displayMode.modeString);
+
     switch (displayMode.colors) {
       default:
       case 2:
@@ -63,12 +74,16 @@ struct Peripherals {
         displayController = new fabgl::VGA16Controller;
         break;
     }
-    
+
     displayController->begin();
     displayController->setResolution(displayMode.modeString, displayMode.xRes, displayMode.yRes, false);
+
+    memoryReport("Display setup ends");
   }
 
   static void setupTerminal() {
+    memoryReport("Terminal setup starts");
+
     DisplayMode displayMode = displayPreferences.currentDisplayMode();
     terminal.begin(displayController, displayMode.columns, displayMode.rows, ps2Controller.keyboard());
 
@@ -102,6 +117,8 @@ struct Peripherals {
     };
 
     terminalPreferences.apply();
+
+    memoryReport("Terminal setup ends");
   }
 
   static void setupSerialPort() {
@@ -113,6 +130,7 @@ struct Peripherals {
   }
 
   static void setupBT() {
+    memoryReport("Bluetooth setup starts");
 
     DisplayMode displayMode = displayPreferences.currentDisplayMode();
 
@@ -120,12 +138,16 @@ struct Peripherals {
     //       the system is always rebooted. So we don't have to take care of tearing down Bluetooth, only
     //       setting up.
     if (displayMode.supportsBluetooth) {
+      memoryReport("Before enabling Bluetooth");
       serialBT.setup();
       esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
     }
     else {
+      memoryReport("Before disabling Bluetooth");
       esp_bt_mem_release(ESP_BT_MODE_BTDM);
     }
+
+    memoryReport("Bluetooth setup ends");
   }
 
   static void setupStatusBar() {

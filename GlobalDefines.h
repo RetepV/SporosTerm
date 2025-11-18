@@ -14,11 +14,16 @@
 #define EC_RETM       "(r)" // "\xa9"           // Registered sign
 
 #define EC_CRLF       "\x0d\x0a"                // Carriage Return & Line Feed
+#define EC_TAB        "\t"                      // TAB
 
 #define EC_CLS        "\e[2J"                   // CLear Screen
 #define EC_CHM        "\e[H"                    // Cursor HoMe
 
 #define EC_CURPOS(H,V)  "\e[" EC_STR(V) ";" EC_STR(H) "H"       // Set cursor to positon (H,V)
+
+void buildCursorPosCode(int h, int v, char *buffer) {
+  sprintf(buffer, "\e[%d;%dH", v, h);
+}
 
 #define EC_CLRTABS    "\e[3g"                   // CLeaR TABS
 #define EC_SETTAB     "\eH"                     // SET TAB
@@ -46,3 +51,9 @@
 
 // 64x20 1 bpp image.
 #define SPOROS_TECH_MONO_LOGO_DATA "038000000000e00207c000000001f0070fe000000003f8070ee000000003b8070440000000011007000000000000000730006000018006077000f00003c007077001f80007e0070ee001f80007e0039ee000f00003c0039ce0006000018003bce00000ff800003b8e00001ffc0000390e00001ffc0000380e000000000000380e000000000000380700000000000030070000000000007003000000000000600"
+
+// Some extra predefined colors
+
+#define AMBER_COLOR RGB888(255,192,0)
+
+

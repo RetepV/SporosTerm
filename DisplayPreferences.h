@@ -5,13 +5,16 @@
 class DisplayPreferences;
 extern DisplayPreferences displayPreferences;
 
-#define NUM_DISPLAYMODES      12
-
+#define NUM_DISPLAYMODES      14
 #define DEFAULT_DISPLAYMODE   0
 
 #define SVGA_800x480_66Hz "\"800x480@66Hz\" 36 800 824 896 1024 480 490 492 525 -HSync -VSync"
 #define SVGA_800x480_66Hz_Alt "\"800x480@66Hz\" 36 800 824 896 1024 480 494 496 533 -HSync -VSync"
 #define SVGA_800x480_60Hz "\"800x480@60Hz\" 40 800 840 968 1056 480 490 492 525 -HSync -VSync"
+
+#define SVGA_672_352_70Hz "\"672x352@70Hz\" 25.175 672 688 752 800 352 387 389 430 -HSync -VSync"
+
+#define VGA_800_500_56Hz "\"800x500@56Hz\" 36 800 824 896 1024 500 561 575 625 -HSync -VSync"
 
 // SVGA_800x600_60Hz "\"800x600@60Hz\" 40 800 840 968 1056
 // 480 490 492 525 -HSync -VSync
@@ -30,10 +33,13 @@ struct DisplayMode {
 };
 
 struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
+
+  // Modes with Bluetooth enabled. Monochrome.  
+
   {
-    "640x350 70Hz",
+    "640x350, 80x24, Monochrome, Status Bar, Bluetooth",
     VGA_640x350_70Hz,
-    &fabgl::FONT_8x14,
+    &fabgl::FONT_SPOROSTERM_8X14,
     2,
     80,
     24,
@@ -43,9 +49,9 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     true
   },
   {
-    "640x350 70Hz",
+    "640x350, 80x25, Monochrome, Bluetooth",
     VGA_640x350_70Hz,
-    &fabgl::FONT_8x14,
+    &fabgl::FONT_SPOROSTERM_8X14,
     2,
     80,
     25,
@@ -55,7 +61,7 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     true
   },
   {
-    "640x350 70Hz",
+    "640x350, 80x48, Monochrome, Status Bar, Bluetooth",
     VGA_640x350_70Hz,
     &fabgl::FONT_8x7,
     2,
@@ -67,7 +73,7 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     true
   },
   {
-    "640x350 70Hz",
+    "640x350, 80x50, Monochrome, Bluetooth",
     VGA_640x350_70Hz,
     &fabgl::FONT_8x7,
     2,
@@ -75,104 +81,132 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     50,
     640,
     350,
+    false,
+    true
+  },
+  {
+    "672x352, 132x48, Monochrome, Status Bar, Bluetooth",
+    SVGA_672_352_70Hz,
+    &fabgl::FONT_SPOROSTERM_5X7,
+    2,
+    132,
+    48,
+    672,
+    352,
+    true,
+    true
+  },
+  {
+    "672x352, 132x50, Monochrome, Bluetooth",
+    SVGA_672_352_70Hz,
+    &fabgl::FONT_SPOROSTERM_5X7,
+    2,
+    132,
+    50,
+    672,
+    352,
     false,
     true
   },
 
-  {
-    "640x350 70Hz",
-    VGA_640x350_70Hz,
-    &fabgl::FONT_8x14,
-    16,
-    80,
-    24,
-    640,
-    350,
-    true,
-    false
-  },
-  {
-    "640x350 70Hz",
-    VGA_640x350_70Hz,
-    &fabgl::FONT_8x14,
-    16,
-    80,
-    25,
-    640,
-    350,
-    false,
-    false
-  },
-  {
-    "640x350 70Hz",
-    VGA_640x350_70Hz,
-    &fabgl::FONT_8x7,
-    16,
-    80,
-    48,
-    640,
-    350,
-    true,
-    false
-  },
-  {
-    "640x350 70Hz",
-    VGA_640x350_70Hz,
-    &fabgl::FONT_8x7,
-    16,
-    80,
-    50,
-    640,
-    350,
-    false,
-    false
-  },
+  // 16-color modes, no bluetooth
 
   {
-    "800x480 66Hz",
-    SVGA_800x480_66Hz_Alt,
-    &fabgl::FONT_10x19_DEC,
-    8,
+    "640x350, 80x24, 16 Color, Status Bar",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_SPOROSTERM_8X14,
+    16,
     80,
     24,
-    800,
-    480,
+    640,
+    350,
     true,
     false
   },
   {
-    "800x480 66Hz",
-    SVGA_800x480_60Hz,
-    &fabgl::FONT_10x19_DEC,
-    8,
+    "640x350, 80x24, 16 Color",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_SPOROSTERM_8X14,
+    16,
     80,
     25,
-    800,
-    480,
+    640,
+    350,
     false,
     false
   },
   {
-    "800x480 66Hz",
-    SVGA_800x480_60Hz,
-    &fabgl::FONT_8x9,
-    8,
+    "640x350, 80x48, 16 Color, Status Bar",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x7,
+    16,
     80,
     48,
-    800,
-    480,
+    640,
+    350,
     true,
     false
   },
   {
-    "800x480 66Hz",
-    SVGA_800x480_60Hz,
-    &fabgl::FONT_8x9,
-    8,
+    "640x350, 80x50, 16 Color",
+    VGA_640x350_70Hz,
+    &fabgl::FONT_8x7,
+    16,
     80,
     50,
+    640,
+    350,
+    false,
+    false
+  },
+  {
+    "672x352, 132x48, 16 Color, Status Bar",
+    SVGA_672_352_70Hz,
+    &fabgl::FONT_SPOROSTERM_5X7,
+    16,
+    132,
+    48,
+    672,
+    352,
+    false,
+    true
+  },
+  {
+    "672x352, 132x50, 16 Color",
+    SVGA_672_352_70Hz,
+    &fabgl::FONT_SPOROSTERM_5X7,
+    16,
+    132,
+    50,
+    672,
+    352,
+    false,
+    true
+  },
+
+  // DEC 800x500 compatible modes, 8 colors unfortunately, due to not enough memory.
+
+  {
+    "DEC 800x500 80x24 8 color, with status bar",
+    VGA_800_500_56Hz,
+    &fabgl::FONT_SPOROSTERM_10X20,
+    8,
+    80,
+    24,
     800,
-    480,
+    500,
+    true,
+    false
+  },
+  {
+    "DEC 800x500 80x25 8 color",
+    VGA_800_500_56Hz,
+    &fabgl::FONT_SPOROSTERM_10X20,
+    8,
+    80,
+    25,
+    800,
+    500,
     false,
     false
   },

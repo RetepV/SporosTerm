@@ -1,3 +1,5 @@
+#include "terminfo.h"
+#include "fabgl.h"
 #include <Preferences.h>
 
 #pragma once
@@ -5,8 +7,10 @@
 class TerminalPreferences;
 extern TerminalPreferences terminalPreferences;
 
+#define NUM_TERMINALMODES                 8
 #define NUM_CURSORSTYLES                  3
 
+#define DEFAULT_TERMINALMODE              fabgl::ANSI_VT
 #define DEFAULT_NEWLINEMODE               true
 #define DEFAULT_SMOOTH_SCROLL             true
 #define DEFAULT_AUTOREPEAT                true
@@ -18,6 +22,8 @@ extern TerminalPreferences terminalPreferences;
 #define DEFAULT_REVERSE_WRAPAROUND        true
 #define DEFAULT_HIDE_SIGNON_LOGO          false
 
+static const char *terminalModeNames[] = { "ANSI/VT", "ADM3A", "ADM31", "Hazeltine 1500", "Osborne", "Kaypro", "VT52", "ANSI Legacy" };
+
 class TerminalPreferences {
   
 public:
@@ -28,6 +34,16 @@ public:
   const char *prefVersionKey            = "VS";
   const int  preferencesVersion         = 1;
 
+  // 0: ANSI_VT
+  // 1: ADM3A
+  // 2: ADM31
+  // 3: ADM3A
+  // 4: Hazeltine1500
+  // 5: Osborne
+  // 6: Kaypro
+  // 7: VT52
+  // 8: ANSILegacy
+  const char *prefTerminalModeKey       = "TM";
   const char *prefNewlineModeKey        = "NL";         // TRUE: CRLF, FALSE: CR only
   const char *prefSmoothScrollKey       = "SS";         // TRUE: smooth scroll, FALSE: jump scroll
   const char *prefKeyAutoRepeatKey      = "AR";         // TRUE: autorepeat, FALSE: mo autorepeat
@@ -38,6 +54,8 @@ public:
   const char *prefReverseWrapAroundKey  = "RW";         // TRUE: text reverse wrap around, FALSE: text does not reverse wrap
   const char *prefHideSignonLogoKey     = "HS";         // TRUE: text reverse wrap around, FALSE: text does not reverse wrap
 
+  fabgl::TermType currentTerminalMode;
+  fabgl::TermType selectedTerminalMode;
   bool currentNewLineMode;
   bool selectedNewLineMode;
   bool currentSmoothScroll;
@@ -81,6 +99,8 @@ public:
   }
 
   void fetch() {
+    currentTerminalMode = (TermType)preferences.getInt(prefTerminalModeKey);
+    selectedTerminalMode = currentTerminalMode;
     currentNewLineMode = preferences.getBool(prefNewlineModeKey);
     selectedNewLineMode = currentNewLineMode;
     currentSmoothScroll = preferences.getBool(prefSmoothScrollKey);
@@ -106,6 +126,7 @@ public:
     preferences.end();
     preferences.begin(preferencesName, false);
 
+    preferences.putInt(prefTerminalModeKey, (int)selectedTerminalMode);
     preferences.putBool(prefNewlineModeKey, selectedNewLineMode);
     preferences.putBool(prefSmoothScrollKey, selectedSmoothScroll);
     preferences.putBool(prefKeyAutoRepeatKey, selectedAutoRepeat);
@@ -133,6 +154,9 @@ public:
       preferences.clear();
     }
 
+    if (!preferences.isKey(prefTerminalModeKey)) {
+      preferences.putInt(prefTerminalModeKey, (int)DEFAULT_TERMINALMODE);
+    }
     if (!preferences.isKey(prefNewlineModeKey)) {
       preferences.putBool(prefNewlineModeKey, DEFAULT_NEWLINEMODE);
     }
@@ -171,6 +195,7 @@ public:
 
   void apply() {
 
+    terminal.setTerminalType(currentTerminalMode);
     terminal.enableNewLineMode(currentNewLineMode);
     terminal.enableSmoothScroll(currentSmoothScroll);
     terminal.enableKeyAutorepeat(currentAutoRepeat);
@@ -179,6 +204,30 @@ public:
     terminal.setBackarrowKeyMode(currentBackspaceStyle);
     terminal.setWrapAround(currentWrapAround);
     terminal.setReverseWrapAroundMode(currentReverseWrapAround);
+  }
+
+    void selectNextTerminalMode() {
+    selectedTerminalMode = (fabgl::TermType)((int)selectedTerminalMode + 1);
+    if ((int)selectedTerminalMode >= (fabgl::TermType)NUM_TERMINALMODES) {
+      selectedTerminalMode = (fabgl::TermType)0;
+    }
+  }
+
+  void selectPrevTerminalMode() {
+    if ((int)selectedTerminalMode == 0) {
+      selectedTerminalMode = (fabgl::TermType)(NUM_TERMINALMODES - 1);
+    }
+    else {
+      selectedTerminalMode = (fabgl::TermType)((int)selectedTerminalMode - 1);
+    }
+  }
+
+  const char *currentTerminalModeName() {
+    return terminalModeNames[currentTerminalMode];
+  }
+
+  const char *selectedTerminalModeName() {
+    return terminalModeNames[selectedTerminalMode];
   }
 
   void toggleNewLineMode() {
@@ -234,7 +283,7 @@ public:
     }
   }
 
-    void toggleBackspaceStyle() {
+  void toggleBackspaceStyle() {
     selectedBackspaceStyle = !selectedBackspaceStyle;
   }
 

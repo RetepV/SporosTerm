@@ -9,7 +9,7 @@ enum SettingsPageAction {
   gotoTerminalSettingsPage,
   gotoDisplaySettingsPage,
   gotoBluetoothSettingsPage,
-  gotoTestSettingsPage,
+  gotoCapabilitiesPage,
   gotoDateTimeSettingsPage
 };
 

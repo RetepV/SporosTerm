@@ -1,9 +1,9 @@
 
 #include "fabgl.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 #include "BluetoothSerialPatched.h"
 
-#define VERSION_NUMBER    0.3
+#define VERSION_NUMBER    0.4
 
 fabgl::PS2Controller                ps2Controller;
 fabgl::BaseDisplayController        *displayController;
@@ -98,6 +98,7 @@ void enableTerminal() {
 }
 
 void renderSignon() {
+
   terminal.write(EC_CURPOS(14,8) EC_DWI "SporosTerm v" EC_STR(VERSION_NUMBER) EC_NOF);
   terminal.write(EC_CURPOS(18,12) "Copyright " EC_COPR " 2025 Sporos Tech, Peter de Vroomen");
   terminal.write(EC_CURPOS(6,14) "Using the FabGL library, Copyright " EC_COPR " 2019-2022 Fabrizio Di Vittorio.");
@@ -113,7 +114,7 @@ void renderLogoAnimation() {
     finalSpriteXPos = 368;
   }
   if (displayPreferences.currentDisplayMode().yRes == 480) {
-    finalSpriteXPos = 170;
+    finalSpriteYPos = 170;
   }
 
   terminal.write(EC_ALLOCSPRITES(1));

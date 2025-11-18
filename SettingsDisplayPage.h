@@ -1,6 +1,6 @@
 #include "fabutils.h"
 #include "SettingsManagerPage.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 #include "DisplayPreferences.h"
 
 #pragma once
@@ -62,13 +62,14 @@ public:
 
 private:
 
-  char scratchBuf[64];
-
   bool needsRestart = false;
   bool askingForRestart = false;
 
   void render() {
     
+    DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
+    char scratchBuf[64];
+
     terminal.write(EC_STX);
 
     terminal.write(EC_CLRTABS);
@@ -102,24 +103,28 @@ private:
 
     terminal.write("  Supports Bluetooth\t");
     terminal.write(selectedDisplayMode.supportsBluetooth ? "yes" : "no");
-    terminal.write(EC_CRLF EC_CRLF);
+    terminal.write(EC_CRLF);
 
-    terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
-    terminal.write(EC_CRLF EC_CRLF);
+    if (askingForRestart) {
+      buildCursorPosCode(6,18, scratchBuf);
+      terminal.write(scratchBuf);
 
-    if (displayPreferences.hasChanges()) {
-      if (askingForRestart) {
-        terminal.write(EC_CRLF "     >>> " EC_ULN EC_BLK "PRESS SPACE TO ACCEPT AND RESTART, ANY OTHER KEY TO CANCEL" EC_NOF " <<<");
+      terminal.write(">>> " EC_ULN EC_BLK "PRESS SPACE TO ACCEPT AND RESTART, ANY OTHER KEY TO CANCEL" EC_NOF " <<<");
+    }
+    else {
+      buildCursorPosCode(0,currentDisplayMode.rows - 4, scratchBuf);
+      terminal.write(scratchBuf);
+
+      terminal.write(EC_BLD "!" EC_NOF   ".   Reset settings to defaults" EC_BLD "!" EC_NOF EC_CRLF);
+      if (displayPreferences.hasChanges()) {
+        terminal.write(EC_BLD "A" EC_NOF ". " EC_BLD "  A" EC_NOF "pply changes and reset" EC_CRLF);
       }
       else {
-        terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and reset");
+        terminal.write(EC_CRLF);
       }
+      terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Discard changes and go back" EC_NOF EC_CRLF);
+      terminal.write(EC_CRLF "(unshifted letter selects next value, shifted letter selects previous)");
     }
-
-    terminal.write(EC_CRLF EC_CRLF);
-    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF EC_CRLF);
-
-    terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
 
     terminal.write(EC_ETX);
   }

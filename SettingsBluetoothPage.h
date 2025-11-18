@@ -1,6 +1,6 @@
 #include "fabutils.h"
 #include "SettingsManagerPage.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 #include "BluetoothPreferences.h"
 
 #pragma once
@@ -48,11 +48,11 @@ public:
         bluetoothPreferences.decSendDelayChar(10);
         render();
         break;
-      case VirtualKey::VK_l:
+      case VirtualKey::VK_n:
         bluetoothPreferences.incSendDelayLine(10);
         render();
         break;
-      case VirtualKey::VK_L:
+      case VirtualKey::VK_N:
         bluetoothPreferences.decSendDelayLine(10);
         render();
         break;
@@ -62,9 +62,10 @@ public:
 
 private:
 
-  char scratchBuf[6];
-
   void render() {
+
+    DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
+    char scratchBuf[16];
     
     terminal.write(EC_STX);
 
@@ -74,36 +75,41 @@ private:
 
     terminal.write(EC_COF EC_CLS EC_CHM EC_DWI EC_ULN "SETTINGS - BLUETOOTH" EC_NOF EC_CRLF EC_CRLF);
 
-    terminal.write(EC_BLD "E" EC_NOF ". Send d" EC_BLD "E" EC_NOF "lay enabled\t");
-    terminal.write(bluetoothPreferences.selectedSendDelayEnabled ? "YES" : "NO");
-    terminal.write(EC_CRLF);
-
-    if (bluetoothPreferences.selectedSendDelayEnabled) {
-      terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "elay after character (ms)\t");
-      sprintf(scratchBuf, "%d", bluetoothPreferences.selectedSendDelayCharMilliseconds);
-      terminal.write(scratchBuf);
+    if (currentDisplayMode.supportsBluetooth) {
+      terminal.write(EC_BLD "E" EC_NOF ". Send d" EC_BLD "E" EC_NOF "lay enabled\t");
+      terminal.write(bluetoothPreferences.selectedSendDelayEnabled ? "Yes" : "No");
       terminal.write(EC_CRLF);
-      terminal.write(EC_BLD "N" EC_NOF ". delay after " EC_BLD "N" EC_NOF "ewline (ms)\t");
-      sprintf(scratchBuf, "%d", bluetoothPreferences.selectedSendDelayLineMilliseconds);
-      terminal.write(scratchBuf);
-      terminal.write(EC_CRLF);
-    }
 
-    terminal.write(EC_CRLF);
+      if (bluetoothPreferences.selectedSendDelayEnabled) {
+        terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "elay after character (ms)\t");
+        sprintf(scratchBuf, "%d", bluetoothPreferences.selectedSendDelayCharMilliseconds);
+        terminal.write(scratchBuf);
+        terminal.write(EC_CRLF);
+        terminal.write(EC_BLD "N" EC_NOF ". delay after " EC_BLD "N" EC_NOF "ewline (ms)\t");
+        sprintf(scratchBuf, "%d", bluetoothPreferences.selectedSendDelayLineMilliseconds);
+        terminal.write(scratchBuf);
+        terminal.write(EC_CRLF);
+      }
+  }
+  else {
+    terminal.write("Bluetooth is not enabled for this display mode." EC_CRLF);
+    terminal.write("Please choose a display mode that supports bluetooth to enable these settings.");
+  }
 
-    terminal.write(EC_BLD "!" EC_NOF ". reset to defaults" EC_BLD "!" EC_NOF "");
-    terminal.write(EC_CRLF EC_CRLF);
+    buildCursorPosCode(0,currentDisplayMode.rows - 4, scratchBuf);
+    terminal.write(scratchBuf);
 
+    terminal.write(EC_BLD "!" EC_NOF ".   Reset settings to defaults" EC_BLD "!" EC_NOF EC_CRLF);
     if (bluetoothPreferences.needsReset) {
-      terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and reset");
+      terminal.write(EC_BLD "A" EC_NOF ".   " EC_BLD "A" EC_NOF "pply changes and reset");
     }
     else {
-      terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and go back");
+      terminal.write(EC_BLD "A" EC_NOF ".   " EC_BLD "A" EC_NOF "pply changes and go back");
     }
-    terminal.write(EC_CRLF EC_CRLF);
-    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "C" EC_NOF "ancel");
+    terminal.write(EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Discard changes and go back" EC_NOF EC_CRLF);
 
-    terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
+    terminal.write(EC_CRLF "(unshifted letter selects next value, shifted letter selects previous)");
 
     terminal.write(EC_ETX);
   }

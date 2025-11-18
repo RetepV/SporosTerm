@@ -1,6 +1,6 @@
 #include "fabutils.h"
 #include "SettingsManagerPage.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 #include "DateTimePreferences.h"
 
 #pragma once
@@ -91,43 +91,43 @@ public:
 
 private:
 
-  char scratchBuf[11];
-
   void render() {
+    
+    DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
+    char scratchBuf[16];
     
     terminal.write(EC_STX);
 
     terminal.write(EC_CLRTABS);
-    terminal.write("\e[0;25H" EC_SETTAB);
     terminal.write("\e[0;40H" EC_SETTAB);
 
     terminal.write(EC_COF EC_CLS EC_CHM EC_DWI EC_ULN "SETTINGS - DATE AND TIME" EC_NOF EC_CRLF EC_CRLF);
 
     terminal.write(EC_BLD "H" EC_NOF ". " EC_BLD "H" EC_NOF "ours  " EC_BLD "M" EC_NOF ". " EC_BLD "M" EC_NOF "inutes  "EC_BLD "S" EC_NOF ". " EC_BLD "S" EC_NOF "econds");
-    terminal.write(EC_CRLF);
+    terminal.write(EC_TAB);
     sprintf(scratchBuf, "%02D:%02D:%02D", dateTimePreferences.selectedHours(), dateTimePreferences.selectedMinutes(), dateTimePreferences.selectedSeconds());
-    terminal.write(EC_CRLF);
-    terminal.write("          ");
     terminal.write(scratchBuf);
-    terminal.write(EC_CRLF EC_CRLF);
-
-    terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "ay  "EC_BLD "O" EC_NOF ". m" EC_BLD "O" EC_NOF "nth  "EC_BLD "Y" EC_NOF ". " EC_BLD "Y" EC_NOF "ear");
     terminal.write(EC_CRLF);
+
+    terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "ay    "EC_BLD "O" EC_NOF ". m" EC_BLD "O" EC_NOF "nth    " EC_BLD "Y" EC_NOF ". " EC_BLD "Y" EC_NOF "ear");
+    terminal.write(EC_TAB);
     sprintf(scratchBuf, "%02D-%02D-%04D", dateTimePreferences.selectedDay(), dateTimePreferences.selectedMonth(), dateTimePreferences.selectedYear());
-    terminal.write(EC_CRLF);
-    terminal.write("          ");
     terminal.write(scratchBuf);
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_BLD "Z" EC_NOF ". time " EC_BLD "Z" EC_NOF "one\t");
+    terminal.write(EC_BLD "Z" EC_NOF ". time " EC_BLD "Z" EC_NOF "one");
+    terminal.write(EC_TAB);
     terminal.write("UTC");
     terminal.write(EC_CRLF EC_CRLF);
 
-    terminal.write(EC_BLD "A" EC_NOF ". s" EC_BLD "A" EC_NOF "ve and go back");
-    terminal.write(EC_CRLF EC_CRLF);
-    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel" EC_NOF EC_CRLF);
+    buildCursorPosCode(0,currentDisplayMode.rows - 3, scratchBuf);
+    terminal.write(scratchBuf);
 
-    terminal.write(EC_CRLF EC_CRLF EC_CRLF "(unshifted letter selects next, shifted letter selects previous)");
+    terminal.write(EC_BLD "A" EC_NOF ".   " EC_BLD "A" EC_NOF "pply changes and go back");
+    terminal.write(EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Discard changes and go back" EC_NOF EC_CRLF);
+
+    terminal.write(EC_CRLF "(unshifted letter selects next value, shifted letter selects previous)");
 
     terminal.write(EC_ETX);
   }

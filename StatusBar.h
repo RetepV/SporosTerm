@@ -5,6 +5,8 @@
 #pragma once
 
 #define STATUSBAR_DELIM                 ' '
+#define FILLER_80_COLS                  "              "
+#define FILLER_132_COLS                 "                                                                   "
 
 class StatusBar;
 extern StatusBar statusBar;
@@ -36,14 +38,16 @@ private:
   static void statusBarUpdate(xTimerHandle pxTimer) {
 
     static bool updateTimeNow = true;     // Used to limit the amount of reads per second from the RTC a bit.
-    static MacAbsoluteTime currentTime = MacAbsoluteTime(1, 0);  
+    static MacAbsoluteTime currentTime = MacAbsoluteTime(1, 0);
+    DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
 
     if (updateTimeNow) {
       currentTime.update(realTimeClock.readTime(), 0);
     }
     updateTimeNow = ~updateTimeNow;
 
-    char buffer[128];
+    char buffer[256];
+
     float stopBits = serialPortPreferences.currentStopBits();
 
     sprintf(buffer,
@@ -51,7 +55,7 @@ private:
       "%c%s"
       "%c%s"
       "%c%s"
-      "              "      // 24 spaces (can we do this nicer?)
+      "%s"      // 24 spaces (can we do this nicer?)
       "%c%3s"
       "%c%3s"
       "%c%3s"
@@ -63,6 +67,7 @@ private:
       STATUSBAR_DELIM, terminal.keyboard()->isCapsLock() ? "CAP" : "cap",
       STATUSBAR_DELIM, terminal.keyboard()->isNumLock() ? "NUM" : "num",
       STATUSBAR_DELIM, terminal.keyboard()->isScrollLock() ? "SCR" : "scr",
+      currentDisplayMode.columns == 80 ? FILLER_80_COLS : FILLER_132_COLS,
       STATUSBAR_DELIM, serialPort.BRKStatus() ? "BRK" : "   ",
       STATUSBAR_DELIM, serialPortPreferences.currentModemTypeShortString(),
       STATUSBAR_DELIM, serialPortPreferences.currentFlowControlShortString(),

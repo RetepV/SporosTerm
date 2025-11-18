@@ -1,13 +1,13 @@
 #include "fabutils.h"
 #include "SettingsManagerPage.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 #include "BluetoothPreferences.h"
 
 #pragma once
 
 class SettingsManager;
 
-class SettingsTestPage: public SettingsManagerPage {
+class SettingsCapabilitiesPage: public SettingsManagerPage {
 
 public:
   SettingsManager *settingsManager;
@@ -18,13 +18,9 @@ public:
   }
 
   SettingsPageAction handleChoice(uint8_t choice) override {
-
-    // NOTE: While rendering the screen, this gets called and an 'x' or 'X' will finish the settings screen
-    // NOTE: again. We should ignore everything that is sent to us (see terminal.onUserReceive()) until rendering
-    // NOTE: finished. How can we do that without hacking more into FabGL?
-
     switch (choice) {
       case VirtualKey::VK_ESCAPE:
+        terminal.canvas()->clear();
         return gotoMainSettingsPage;
      }
      return noFurtherAction;
@@ -42,7 +38,7 @@ private:
 
     DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
 
-    for (int row = 0; row < (currentDisplayMode.rows - 1); row++) {
+    for (int row = 0; row < currentDisplayMode.rows; row++) {
       if (row == 0) {
         for (int col = 0; col < currentDisplayMode.columns; col++) {
           sprintf(scratchBuf, "%1d", col % 10);
@@ -53,10 +49,13 @@ private:
         for (int col = 0; col < currentDisplayMode.columns; col++) {
           if (col % 10 == 0) {
             if (col == 0) {
-              sprintf(scratchBuf, "1");     // Exception because it looks better to have a 1 here.
+              sprintf(scratchBuf, "1");     // Exception because it just looks better to have a 1 at column 0.
             }
             else {
-              sprintf(scratchBuf, "%1d", col / 10);
+              // In 132 cols mode, column can become 10 or larger, needing 2 characters. And then we
+              // write too many characters to the screen causing weird display. We also don't want to
+              // sacrifice another row. So just show the column divided by 10 and mod 10.
+              sprintf(scratchBuf, "%1d", (col / 10) % 10);       
             }
             terminal.write(scratchBuf);
           }
@@ -71,39 +70,40 @@ private:
       }
 
       if (row == 2) {
+        sprintf(scratchBuf, "   Resolution: %dx%d (%dx%d characters)", currentDisplayMode.xRes, currentDisplayMode.yRes, currentDisplayMode.columns, currentDisplayMode.rows);
+        terminal.write(scratchBuf);
+      }
+      else if (row == 4) {
         terminal.write("   ");
         for (uint8_t ch = 0; ch < 64; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 3) {
+      else if (row == 5) {
         terminal.write("   ");
         for (uint8_t ch = 64; ch < 128; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 4) {
+      else if (row == 6) {
         terminal.write("   ");
         for (uint8_t ch = 128; ch < 192; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 5) {
+      else if (row == 7) {
         terminal.write("   ");
         for (uint8_t ch = 192; ch < 255; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 7) {
-        sprintf(scratchBuf, "   Resolution: %dx%d (%dx%d characters)", currentDisplayMode.xRes, currentDisplayMode.yRes, currentDisplayMode.columns, currentDisplayMode.rows);
-        terminal.write(scratchBuf);
-      }
       else if (row == 9) {
-        terminal.write("    Colors:");
+        sprintf(scratchBuf, "   Colors (%d):", currentDisplayMode.colors);
+        terminal.write(scratchBuf);          
       }
       else if (row == 10) {
         terminal.write("      ");
@@ -111,8 +111,6 @@ private:
           sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
           terminal.write(scratchBuf);          
         }
-        sprintf(scratchBuf, "\e[%dm", 32);        
-        terminal.write(scratchBuf);          
       }
       else if (row == 11) {
         terminal.write("      ");
@@ -120,22 +118,23 @@ private:
           sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
           terminal.write(scratchBuf);          
         }
-        sprintf(scratchBuf, "\e[%dm", 32);        
-        terminal.write(scratchBuf);          
+      }
+      else if (row == (currentDisplayMode.rows - 2)) {
+        terminal.write("   " EC_BLD "ESC" EC_NOF ". " EC_BLD "Go back" EC_NOF);
       }
 
-      terminal.write(EC_CRLF);
+      if (row != (currentDisplayMode.rows - 1)) {
+        terminal.write(EC_CRLF);
+      }
     }
 
-    terminal.write("\e_GPEN255;255;255$");
-    terminal.write("\e_GPENW1$");
-    sprintf(scratchBuf, "\e_GRECT0;0;%d;%d$", currentDisplayMode.xRes - 1, currentDisplayMode.yRes - 1);
-    // sprintf(scratchBuf, "\e_GRECT0;0;100;100$", currentDisplayMode.xRes - 1, currentDisplayMode.yRes - 1);
-    terminal.write(scratchBuf);
+    // Give terminal a little time to render everything before drawing the rectangle. Otherwise the letters will
+    // overwrite the rectangle's lines.
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 
-
-    sprintf(scratchBuf, "%1d", (displayPreferences.currentDisplayMode().rows - 1));
-    terminal.write(scratchBuf);
+    // Draw a bright white rectangle around the screen. This helps with auto resizing of a screen.
+    terminal.canvas()->setPenColor(fabgl::BrightWhite);
+    terminal.canvas()->drawRectangle(0, 0, currentDisplayMode.xRes - 1, currentDisplayMode.yRes - 1);
 
     terminal.write(EC_ETX);
   }

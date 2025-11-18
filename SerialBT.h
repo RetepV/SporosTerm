@@ -8,16 +8,16 @@
 //       a lot smaller. They are only necessary because we need to cross thread boundaries.
 
 
-#define SEND_TO_SERIAL_QUEUE_SIZE             512
+#define SEND_TO_SERIAL_QUEUE_SIZE             1024
 #define SEND_TO_SERIAL_QUEUE_LOW_WATER        (int)((SEND_TO_SERIAL_QUEUE_SIZE / 100) * 20)       // 20% low water mark
 #define SEND_TO_SERIAL_QUEUE_HIGH_WATER       (int)((SEND_TO_SERIAL_QUEUE_SIZE / 100) * 80)       // 80% high water mark
 
-#define SEND_TO_BLUETOOTH_QUEUE_SIZE          512
+#define SEND_TO_BLUETOOTH_QUEUE_SIZE          1024
 #define SEND_TO_BLUETOOTH_QUEUE_LOW_WATER     (int)((SEND_TO_BLUETOOTH_QUEUE_SIZE / 100) * 10)    // 20% low water mark
 #define SEND_TO_BLUETOOTH_QUEUE_HIGH_WATER    (int)((SEND_TO_BLUETOOTH_QUEUE_SIZE / 100) * 90)    // 80% low water mark
 
 #define TASK_STACK_SIZE         4096          // At 1024 I saw frequent crashes. At 2048 I saw occasional crashes. They went away once I made it 4096. But to be honest, I don't know why it needs to be this big.
-#define TASK_PRIORITY           10            // Idle task is 0, so set to 1
+#define TASK_PRIORITY           5             // 5 is the same as keyboard and mouse scanning priority.
 
 class SerialBT;
 extern SerialBT serialBT;
@@ -86,14 +86,14 @@ public:
   static void onBTEventReceived(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
 
     if (event == ESP_SPP_START_EVT) {
-      Serial.printf("BT: SPP initialized event\n");
+      Serial.printf("BT event: SPP initialized\n");
     }
     else if (event == ESP_SPP_SRV_OPEN_EVT ) {
-      Serial.printf("BT: client connected event, status: %d\n", param->srv_open.status);
+      Serial.printf("BT event: client connected, status: %d\n", param->srv_open.status);
       serialBT.startProxying();
     }
     else if (event == ESP_SPP_CLOSE_EVT) {
-      Serial.printf("BT: client disconnected event status: %d, port_status: %d, %s\n", param->close.status, param->close.port_status, param->close.async ? "async" : "sync");
+      Serial.printf("BT event: client disconnected status: %d, port_status: %d, %s\n", param->close.status, param->close.port_status, param->close.async ? "async" : "sync");
       serialBT.stopProxying();
     }
     else if (event == ESP_SPP_DATA_IND_EVT) {
@@ -117,7 +117,7 @@ public:
       }
     }
     else if (event == ESP_SPP_WRITE_EVT) {
-      // Eat up write events.
+      // Eat up write events, not doing anything with them.
     }
     else {
       // Serial.printf("BT: unhandled event: %d\n", event);

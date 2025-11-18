@@ -1,6 +1,6 @@
 #include "fabutils.h"
 #include "SettingsManagerPage.h"
-#include "TerminalEscapeCodeDefines.h"
+#include "GlobalDefines.h"
 
 #pragma once
 
@@ -13,6 +13,9 @@ public:
 
   void show() override {
 
+    DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
+    char scratch[32];
+
     terminal.write(EC_STX);
 
     terminal.write(EC_COF EC_CLS EC_CHM EC_DWI EC_ULN "SETTINGS - MAIN MENU" EC_NOF EC_CRLF EC_CRLF);
@@ -21,13 +24,13 @@ public:
     terminal.write(EC_BLD "T" EC_NOF ". " EC_BLD "T" EC_NOF "erminal" EC_CRLF);
     terminal.write(EC_BLD "D" EC_NOF ". " EC_BLD "D" EC_NOF "isplay" EC_CRLF);
     terminal.write(EC_BLD "A" EC_NOF ". d" EC_BLD "A" EC_NOF "te and time" EC_CRLF);
-    if (displayPreferences.currentDisplayMode().supportsBluetooth) {
+    if (currentDisplayMode.supportsBluetooth) {
       terminal.write(EC_BLD "B" EC_NOF ". " EC_BLD "B" EC_NOF "luetooth" EC_CRLF);
     }
     terminal.write(EC_BLD "S" EC_NOF ". " EC_BLD "S" EC_NOF "how capabilities (test page)");
-  
-    terminal.write(EC_CRLF  EC_CRLF);
-    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Cancel (close)" EC_NOF);
+
+    terminal.write(EC_CRLF EC_CRLF);
+    terminal.write(EC_BLD "ESC" EC_NOF ". " EC_BLD "Close settings" EC_NOF);
 
     terminal.write(EC_CRLF EC_CRLF EC_CRLF EC_CRLF EC_DWI EC_ULN "ABOUT" EC_NOF EC_CRLF EC_CRLF);
 
@@ -42,11 +45,8 @@ public:
     terminal.write(EC_ALLOCSPRITES(1));
     terminal.write(EC_DEFSPRITECOL(0,64,20,"M",255,255,255,SPOROS_TECH_MONO_LOGO_DATA));
 
-    // This is drama right here, caused by Arduino's way of concatenating all files so that you have to do everything in header files.
-    // There is a circular dependency that we can't break. So we need to get the status bar height as the terminal font and add some.
-    int spriteXPos = displayPreferences.currentDisplayMode().xRes - 65;
-    int spriteYPos = displayPreferences.currentDisplayMode().yRes - 21 - (displayPreferences.currentDisplayMode().enableStatusBar ? terminal.font().height + 3 : 3);
-    char scratch[32];
+    int spriteXPos = currentDisplayMode.xRes - 64 - 1;
+    int spriteYPos = currentDisplayMode.rows * terminal.font().height - 20 - 1;
 
     sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", spriteXPos, spriteYPos);
     terminal.write(scratch);
@@ -88,7 +88,7 @@ public:
         }
       case VirtualKey::VK_s:
       case VirtualKey::VK_S:
-        return gotoTestSettingsPage;
+        return gotoCapabilitiesPage;
       default:
         return noFurtherAction;
      }
