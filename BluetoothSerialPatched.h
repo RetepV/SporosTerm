@@ -113,4 +113,3 @@ class BluetoothSerialPatched: public Stream
 #endif // defined(CONFIG_BT_ENABLED) && defined(CONFIG_BLUEDROID_ENABLED)
 
 #endif // _BLUETOOTH_SERIAL_PATCHED_H_
-
