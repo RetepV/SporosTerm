@@ -22,9 +22,17 @@ BluetoothSerialPatched              bluetoothSerial;
 #include "SettingsManager.h"
 SettingsManager settingsManager;
 
-#include "StatusBar.h"
 #include "Peripherals.h"
+#include "StatusBar.h"
 
+// Here because of messed-up dependencies between StatusBar and Peripherals.
+static void setupStatusBar() {
+  DisplayMode displayMode = displayPreferences.currentDisplayMode();
+
+  if (displayMode.enableStatusBar) {
+    statusBar.start(displayMode.rows);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -45,8 +53,9 @@ void setup() {
   Peripherals::setupSerialPortTerminalConnector();
   disableTerminal();
   Peripherals::setupBT();
-  Peripherals::setupStatusBar();
   Peripherals::setupSerialPort();
+
+  setupStatusBar();
 
   memoryReport("Initialization finished");
 

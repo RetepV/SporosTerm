@@ -32,6 +32,8 @@ public:
   TaskHandle_t sendToSerialTaskHandle;
   TaskHandle_t sendToBluetoothTaskHandle;
 
+  bool isProxying = false;
+
 public:
 
   void startProxying() {
@@ -47,19 +49,23 @@ public:
 
     xTaskCreate(sendBytesToSerialTask, "SND2SER", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToSerialTaskHandle);
     xTaskCreate(sendBytesToBluetoothTask, "SND2BT", TASK_STACK_SIZE, this, TASK_PRIORITY, &sendToBluetoothTaskHandle);
+
+    isProxying = true;
   }
 
   void stopProxying() {
 
-      terminal.userOnReceive =  [&](uint8_t c) {};
+    terminal.userOnReceive =  [&](uint8_t c) {};
 
-      vTaskDelete(sendToSerialTaskHandle);
-      vQueueDelete(sendToSerialQueueHandle);
-      sendToSerialQueueHandle = NULL;
+    vTaskDelete(sendToSerialTaskHandle);
+    vQueueDelete(sendToSerialQueueHandle);
+    sendToSerialQueueHandle = NULL;
 
-      vTaskDelete(sendToBluetoothTaskHandle);
-      vQueueDelete(sendToBluetoothQueueHandle);
-      sendToBluetoothQueueHandle = NULL;
+    vTaskDelete(sendToBluetoothTaskHandle);
+    vQueueDelete(sendToBluetoothQueueHandle);
+    sendToBluetoothQueueHandle = NULL;
+
+    isProxying = false;
   }
 
   static void onBTDataReceived(const uint8_t *buffer, size_t size) {

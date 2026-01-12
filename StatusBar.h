@@ -5,8 +5,8 @@
 #pragma once
 
 #define STATUSBAR_DELIM                 ' '
-#define FILLER_80_COLS                  "              "
-#define FILLER_132_COLS                 "                                                                   "
+#define FILLER_80_COLS                  "          "
+#define FILLER_132_COLS                 "                                                               "
 
 class StatusBar;
 extern StatusBar statusBar;
@@ -55,7 +55,8 @@ private:
       "%c%s"
       "%c%s"
       "%c%s"
-      "%s"      // 24 spaces (can we do this nicer?)
+      "%s"      // spacer (can we do this nicer?)
+      "%c%3s"
       "%c%3s"
       "%c%3s"
       "%c%3s"
@@ -68,6 +69,7 @@ private:
       STATUSBAR_DELIM, terminal.keyboard()->isNumLock() ? "NUM" : "num",
       STATUSBAR_DELIM, terminal.keyboard()->isScrollLock() ? "SCR" : "scr",
       currentDisplayMode.columns == 80 ? FILLER_80_COLS : FILLER_132_COLS,
+      STATUSBAR_DELIM, currentDisplayMode.supportsBluetooth ? (serialBT.isProxying ? "BLU" : "blu") : "   ",
       STATUSBAR_DELIM, serialPort.BRKStatus() ? "BRK" : "   ",
       STATUSBAR_DELIM, serialPortPreferences.currentModemTypeShortString(),
       STATUSBAR_DELIM, serialPortPreferences.currentFlowControlShortString(),

@@ -150,14 +150,6 @@ struct Peripherals {
     memoryReport("Bluetooth setup ends");
   }
 
-  static void setupStatusBar() {
-    DisplayMode displayMode = displayPreferences.currentDisplayMode();
-
-    if (displayMode.enableStatusBar) {
-      statusBar.start(displayMode.rows);
-    }
-  }
-
   static void setupRealTimeClock() {
     realTimeClock.setup(RTC_ONEWIRE);
     realTimeClock.findDevice();
