@@ -169,7 +169,7 @@ public:
   void incMonths() {
     components.tm_mon++;
     if (components.tm_mon >= MONTHS_PER_YEAR) {
-      components.tm_mon = 1;
+      components.tm_mon = 0;
       incYears();
     } else {
       timestampInSeconds = fromComponents(&components);
@@ -179,7 +179,7 @@ public:
 
   void decMonths() {
     components.tm_mon--;
-    if (components.tm_mon < 1) {
+    if (components.tm_mon < 0) {
       components.tm_mon = MONTHS_PER_YEAR - 1;
       decYears();
     } else {
