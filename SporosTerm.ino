@@ -25,6 +25,8 @@ SettingsManager settingsManager;
 #include "Peripherals.h"
 #include "StatusBar.h"
 
+#include "SignonMessage.h"
+
 // Here because of messed-up dependencies between StatusBar and Peripherals.
 static void setupStatusBar() {
   DisplayMode displayMode = displayPreferences.currentDisplayMode();
@@ -47,6 +49,8 @@ void setup() {
 
   Peripherals::initializePreferences();
 
+  Peripherals::handleStartupWithResetButtonPressed();   // If reset button was pressed, we won't go beyond here but restart.
+  
   Peripherals::setupPS2Ports();
   Peripherals::setupDisplayController();
   Peripherals::setupTerminal();
@@ -63,8 +67,7 @@ void setup() {
     enableTerminal();
   }
   else {
-    renderSignon();
-    renderLogoAnimation();
+    SignonMessage::renderSignon();
     enableTerminalOnKeypress();
   }
 }
@@ -86,7 +89,7 @@ void enableTerminalOnKeypress() {
     enableTerminal();
   };
 
-  terminal.write(EC_CURPOS(28,18) EC_BLK "-= Press a key to start =-" EC_NOF);
+  SignonMessage::renderPressKey();
 }
 
 void enableTerminal() {
@@ -105,47 +108,6 @@ void enableTerminal() {
   
   serialPortTerminalConnector.disableSerialPortRX(false);
 }
-
-void renderSignon() {
-
-  terminal.write(EC_CURPOS(14,8) EC_DWI "SporosTerm v" EC_STR(VERSION_NUMBER) EC_NOF);
-  terminal.write(EC_CURPOS(18,12) "Copyright " EC_COPR " 2025 Sporos Tech, Peter de Vroomen");
-  terminal.write(EC_CURPOS(6,14) "Using the FabGL library, Copyright " EC_COPR " 2019-2022 Fabrizio Di Vittorio.");
-  terminal.write(EC_CURPOS(17,15) "Many thanks to Fabrizio Di Vittorio and Just4Fun!");
-}
-
-void renderLogoAnimation() {
-
-  int finalSpriteXPos = 288;
-  int finalSpriteYPos = 124;
-
-  if (displayPreferences.currentDisplayMode().xRes == 800) {
-    finalSpriteXPos = 368;
-  }
-  if (displayPreferences.currentDisplayMode().yRes == 480) {
-    finalSpriteYPos = 170;
-  }
-
-  terminal.write(EC_ALLOCSPRITES(1));
-  terminal.write(EC_DEFSPRITECOL(0,64,20,"M",255,255,255,SPOROS_TECH_MONO_LOGO_DATA));
-
-  int animXValues[finalSpriteYPos];
-  char scratch[32];
-
-  for (double y = 0; y < finalSpriteYPos; y++) {
-    animXValues[(finalSpriteYPos -1) - (int)y] = (int)(finalSpriteXPos + sin(y / 9.0) * 20);
-  }
-
-  for (int y = 0; y < finalSpriteYPos; y++) {
-    sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", animXValues[y], y);
-    terminal.write(scratch);
-    vTaskDelay(20);
-  }
-  sprintf(scratch, "\e_GSPRITESET0;V;0;%d;%d$", finalSpriteXPos, finalSpriteYPos);
-  terminal.write(scratch);  
-}
-
-static bool drawTerminalTest = false;
 
 void loop() {
   vTaskDelete(NULL);
