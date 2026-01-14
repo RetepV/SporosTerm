@@ -8,7 +8,7 @@ class TerminalPreferences;
 extern TerminalPreferences terminalPreferences;
 
 #define NUM_TERMINALMODES                 8
-#define NUM_CURSORSTYLES                  3
+#define NUM_CURSORSTYLES                  4
 
 #define DEFAULT_TERMINALMODE              fabgl::ANSI_VT
 #define DEFAULT_NEWLINEMODE               true
@@ -64,8 +64,8 @@ public:
   bool selectedAutoRepeat;
   bool currentCursorBlink;
   bool selectedCursorBlink;
-  int selectableCursorStyles[NUM_DATASIZES] = { 1, 3, 5 };
-  char *selectableCursorStylesStrings[NUM_DATASIZES] = { "Block", "Underline", "Bar" };
+  int selectableCursorStyles[NUM_CURSORSTYLES] = { 1, 3, 5, 0 };
+  char *selectableCursorStylesStrings[NUM_CURSORSTYLES] = { "Block", "Underline", "Bar", "None" };
   int currentCursorStyleIndex;
   int selectedCursorStyleIndex;
   bool currentBackspaceStyle;
@@ -119,6 +119,12 @@ public:
     selectedReverseWrapAround = currentReverseWrapAround;
     currentHideSignonLogo = preferences.getBool(prefHideSignonLogoKey);
     selectedHideSignonLogo = currentHideSignonLogo;
+
+    // Settingsmanager turns off the serial port, takes over the terminal and turns off the cursor. It will return
+    // the cursor to its previous state when finished. But if the cursor is changed in the preferences, we want
+    // to override that previous state. That is what this call does.
+    // Note that this call also provides for the initial proper state of the cursor after rest.
+    cursorDidChange(selectedCursorStyle());
   }
 
   void save() {
@@ -199,8 +205,18 @@ public:
     terminal.enableNewLineMode(currentNewLineMode);
     terminal.enableSmoothScroll(currentSmoothScroll);
     terminal.enableKeyAutorepeat(currentAutoRepeat);
-    terminal.enableCursorBlinking(currentCursorBlink);
-    terminal.setCursorStyle(currentCursorStyle());
+
+    int cursorStyle = currentCursorStyle();
+    if (cursorStyle > 0) {
+      terminal.enableCursorBlinking(currentCursorBlink);
+      terminal.enableCursor(true);
+      terminal.setCursorStyle(cursorStyle);
+    }
+    else {
+      terminal.enableCursorBlinking(false);
+      terminal.enableCursor(false);
+    }
+
     terminal.setBackarrowKeyMode(currentBackspaceStyle);
     terminal.setWrapAround(currentWrapAround);
     terminal.setReverseWrapAroundMode(currentReverseWrapAround);

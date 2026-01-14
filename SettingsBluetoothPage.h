@@ -90,11 +90,11 @@ private:
         terminal.write(scratchBuf);
         terminal.write(EC_CRLF);
       }
-  }
-  else {
-    terminal.write("Bluetooth is not enabled for this display mode." EC_CRLF);
-    terminal.write("Please choose a display mode that supports bluetooth to enable these settings.");
-  }
+    }
+    else {
+      terminal.write("Bluetooth is not enabled for this display mode." EC_CRLF);
+      terminal.write("Please choose a display mode that supports bluetooth to enable these settings.");
+    }
 
     buildCursorPosCode(0,currentDisplayMode.rows - 4, scratchBuf);
     terminal.write(scratchBuf);

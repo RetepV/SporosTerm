@@ -16,7 +16,7 @@
 
 // GPIO numbers for RTC
 #define RTC_ONEWIRE                       14
-#define RTC_INT                           36             
+#define RTC_INT                           36           
 
 void memoryReport(const char *marker) {
   Serial.printf("[%s] Total free: %d, maximum allocatable: %d\n", marker, heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
@@ -113,7 +113,6 @@ struct Peripherals {
     terminal.keyboard()->setLayout(&fabgl::USLayout);
     terminal.setBackgroundColor(Color::Black);
     terminal.setForegroundColor(Color::White);
-    terminal.enableCursor(true);
 
     terminal.loadFont(displayMode.font);
 

@@ -25,12 +25,9 @@ public:
 
   void show() {
 
-    serialPortTerminalConnector.disableSerialPortRX(true);
+    disableTerminal();
 
     originalBackgroundColor = terminal.getBackgroundColor();
-    //terminal.setBackgroundColor(Color::black);
-    
-    terminal.clear();
     
     handleAction(gotoMainSettingsPage);
 
@@ -49,13 +46,7 @@ public:
 
   void finish() {
 
-    terminal.onLocalModeVirtualKeyItem = [&](VirtualKeyItem *item) {
-    };
-
-    terminal.onLocalModeReceive = [&](uint8_t value) {
-    };
-
-    terminal.enableLocalMode(false);
+    enableTerminal();
 
     if (currentPage != NULL) {
       delete currentPage;
@@ -63,11 +54,6 @@ public:
     }
 
     terminal.setBackgroundColor(originalBackgroundColor);
-
-    terminal.clear();
-    terminal.write(EC_CON);
-
-    serialPortTerminalConnector.disableSerialPortRX(false);
   }
 
 private:
