@@ -11,6 +11,9 @@
 
 #pragma once
 
+#define RESET_PIN        39
+#define RESET_PIN_ACTIVE  0   // 0 = reset when low, 1 = reset when high
+
 // GPIO numbers for RTC
 #define RTC_ONEWIRE                       14
 #define RTC_INT                           36             
@@ -20,6 +23,25 @@ void memoryReport(const char *marker) {
 }
 
 struct Peripherals {
+
+  static void handleStartupWithResetButtonPressed() {
+    pinMode(RESET_PIN, INPUT);
+    if (digitalRead(RESET_PIN) == RESET_PIN_ACTIVE) {
+      serialPortPreferences.convertOrReset(true);
+      terminalPreferences.convertOrReset(true);
+      displayPreferences.convertOrReset(true);
+      bluetoothPreferences.convertOrReset(true);
+      dateTimePreferences.convertOrReset(true);
+
+      // Spin until user releases the reset pin again.
+      while(digitalRead(RESET_PIN) == RESET_PIN_ACTIVE) {
+        vTaskDelay(250 / portTICK_PERIOD_MS);
+      };
+
+      // Display preferences were reset as well, so we must restart now.
+      ESP.restart();
+    }
+  }
 
   static void initializePreferences() {
     relayManager.start();
