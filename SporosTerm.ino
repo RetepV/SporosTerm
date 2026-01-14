@@ -3,7 +3,7 @@
 #include "GlobalDefines.h"
 #include "BluetoothSerialPatched.h"
 
-#define VERSION_NUMBER    0.4
+#define VERSION_NUMBER    0.5
 
 // Some forward declarations to satisfy dependencies.
 static void disableTerminal();
