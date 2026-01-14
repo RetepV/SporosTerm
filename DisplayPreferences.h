@@ -168,8 +168,8 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     48,
     672,
     352,
-    false,
-    true
+    true,
+    false
   },
   {
     "672x352, 132x50, 16 Color",
@@ -181,7 +181,7 @@ struct DisplayMode displayModes[NUM_DISPLAYMODES] = {
     672,
     352,
     false,
-    true
+    false
   },
 
   // DEC 800x500 compatible modes, 8 colors unfortunately, due to not enough memory.
