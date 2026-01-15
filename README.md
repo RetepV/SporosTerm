@@ -51,7 +51,7 @@ Now you should be ready to go!
 
 # Why "Sporos"? What does it mean?
 
-Well, this is Sporoulis, or Sporos for short. He is Greek, and Sporoulis means "little seed" in Greek. No, I'm not Greek, only Sporoulis is. ;) I just find it a great name!
+Well, this is Σπορούλισ (Sporoulis), or Sporos for short. He is Greek. Sporoulis means "Little seed" in Greek, Sporos means "Seed". I just find it a great name! No, I'm not Greek, only Sporoulis is Greek.
 
 ![IMG_9341](https://github.com/user-attachments/assets/2c70e353-a5bb-4a54-a6bc-1fac8de8467c)
 
