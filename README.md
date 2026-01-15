@@ -21,7 +21,7 @@ Steps:
 1. Make sure to be on the latest Arduino development environment.
 2. Follow the instructions at https://github.com/espressif/arduino-esp32 to install the ESP32 board support.
 3. After having installed the ESP32 board support, you will have to open the Arduino Boards Manager and find the entry `esp32 by Espressif Systems`. Here, you will have to switch your installed version (probably `3.3.2` or later) to version `2.0.17`.
-__It is absolutely necessary to downgrade to 2.0.17, in order to compile the FabGL library.__
+__It is absolutely necessary to downgrade the ESP32 board support to 2.0.17, in order to compile the FabGL library.__
 4. Download the patched FabGL library's source code from here: https://github.com/RetepV/FabGL/tree/FabGL-nTerm2-S. Doublecheck if the `FabGL-nTerm2-S` branch selected. Download the source code as a .zip file, it will probably be named `FabGL-FabGL-nTerm2-S.zip`.
 5. Download the SporosTerm source code from this repository, and then open `SporosTerm.ino` in the Arduino development environment.
 6. In the Arduino development environment, go to `Sketch->Include Library->Add .ZIP Library`. Select the `FabGL-FabGL-nTerm2-S.zip` file, wait until Arduino finishes processing and tells that the library was installed successfully.
@@ -46,3 +46,12 @@ Now you should be ready to go!
 >On my Macbook, I notice that it will not always provide power to my nTerm2-S board when I connect it directly to an on-board USB port. Probably the Macbook does not trust the nTerm2-S, blacklists it, and will refuse to power it. The solution is to connect through a USB hub.
 >The nTerm2-S uses no more than 250mA. With display modes that support Bluetooth, it seems to use about 150mA when transferring a lot of data. With display modes that don't support Bluetooth, it's about 80mA continuous. During boot, I can see a spike of around 250mA, probably the ESP32's radio is turned on by default during boot, and it takes a few milliseconds to shut it down again.
 >Anyway, Macbooks are very expensive to repair, so it's never a bad idea to connect USB devices through a hub. :sunglasses:
+>
+>
+
+# Why "Sporos"? What does it mean?
+
+Well, this is Sporoulis, or Sporos for short. He is Greek, and Sporoulis means "little seed" in Greek. No, I'm not Greek, only Sporoulis is. ;) I just find it a great name!
+
+![IMG_9341](https://github.com/user-attachments/assets/2c70e353-a5bb-4a54-a6bc-1fac8de8467c)
+
