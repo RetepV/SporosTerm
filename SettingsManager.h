@@ -8,6 +8,8 @@
 #include "SettingsCapabilitiesPage.h"
 #include "SettingsDateTimePage.h"
 
+#include "GlyphsBufferSaver.h"
+
 #pragma once
 
 class SettingsManager {
@@ -25,7 +27,7 @@ public:
 
   void show() {
 
-    disableTerminal();
+    switchToLocalMode();
 
     originalBackgroundColor = terminal.getBackgroundColor();
     
@@ -40,20 +42,18 @@ public:
     terminal.onLocalModeReceive = [&](uint8_t value) {
       handleSpecialCharacters(value);
     };
-
-    terminal.enableLocalMode(true);
   }
 
   void finish() {
 
-    enableTerminal();
+    terminal.setBackgroundColor(originalBackgroundColor);
 
     if (currentPage != NULL) {
       delete currentPage;
       currentPage = NULL;
     }
 
-    terminal.setBackgroundColor(originalBackgroundColor);
+    switchToNormalMode();
   }
 
 private:

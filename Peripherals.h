@@ -43,6 +43,15 @@ struct Peripherals {
     }
   }
 
+  static void initializeLittleFS() {
+      if(!LittleFS.begin(true)) {
+        Serial.println("LittleFS Mount (with autoformat) Failed");
+        return;
+    }
+
+    Serial.println("LittleFS Mounted");
+  }
+
   static void initializePreferences() {
     relayManager.start();
 

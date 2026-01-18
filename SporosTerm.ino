@@ -2,12 +2,14 @@
 #include "fabgl.h"
 #include "GlobalDefines.h"
 #include "BluetoothSerialPatched.h"
+#include "FS.h"
+#include <LittleFS.h>
 
 #define VERSION_NUMBER    0.5
 
 // Some forward declarations to satisfy dependencies.
-static void disableTerminal();
-static void enableTerminal();
+static void switchToLocalMode();
+static void switchToNormalMode();
 static void cursorDidChange(int cursorType);
 
 fabgl::PS2Controller                ps2Controller;
@@ -20,6 +22,8 @@ fabgl::SerialPortTerminalConnector  serialPortTerminalConnector;
 BluetoothSerialPatched              bluetoothSerial;
 
 bool                                prevCursorEnabled = false;
+
+#include "GlyphsBufferSaver.h"
 
 #include "SerialPortPreferences.h"
 #include "TerminalPreferences.h"
@@ -44,29 +48,38 @@ static void setupStatusBar() {
   }
 }
 
-static void disableTerminal() {
+static void switchToLocalMode() {
+
+  terminal.saveCursorState();
+
+  prevCursorEnabled = terminal.getCursorEnabled();
+
   serialPortTerminalConnector.disableSerialPortRX(true);
   terminal.enableLocalMode(true);
 
+  GlyphsBufferSaver::saveGlyphsBuffer();
+
   terminal.clear(true);
-  prevCursorEnabled = terminal.getCursorEnabled();
   terminal.enableCursor(false);
 }
 
-static void enableTerminal() {
+static void switchToNormalMode() {
   terminal.write(EC_SETSPRITE(0,"H",0,0,0));
   terminal.write(EC_ALLOCSPRITES(0));
 
   terminal.clear(true);
+
+  GlyphsBufferSaver::restoreGlyphsBuffer();
+
+  terminal.restoreCursorState();
   terminal.enableCursor(prevCursorEnabled);
 
-  terminal.enableLocalMode(false);
-  
   terminal.onLocalModeVirtualKeyItem = [&](VirtualKeyItem *item) {
   };
   terminal.onLocalModeReceive = [&](uint8_t value) {
   };
-  
+
+  terminal.enableLocalMode(false);
   serialPortTerminalConnector.disableSerialPortRX(false);
 }
 
@@ -84,6 +97,7 @@ void setup() {
   disableCore1WDT();
 
   Peripherals::setupRealTimeClock();
+  Peripherals::initializeLittleFS();
 
   Peripherals::initializePreferences();
 
@@ -94,7 +108,7 @@ void setup() {
   Peripherals::setupTerminal();
   Peripherals::setupSerialPortTerminalConnector();
   
-  disableTerminal();
+  switchToLocalMode();
   
   Peripherals::setupBT();
   Peripherals::setupSerialPort();
@@ -104,7 +118,7 @@ void setup() {
   memoryReport("Initialization finished");
 
   if (terminalPreferences.currentHideSignonLogo) {
-    enableTerminal();
+    switchToNormalMode();
   }
   else {
     SignonMessage::renderSignon();
@@ -118,7 +132,7 @@ void enableTerminalOnKeypress() {
   };
 
   terminal.onLocalModeVirtualKeyItem = [&](VirtualKeyItem *item) {
-    enableTerminal();
+    switchToNormalMode();
   };
 
   SignonMessage::renderPressKey();
