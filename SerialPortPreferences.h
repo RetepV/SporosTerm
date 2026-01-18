@@ -23,7 +23,7 @@ extern SerialPortPreferences serialPortPreferences;
 #define DEFAULT_UART_BITS     8
 #define DEFAULT_UART_PARITY   'N'
 #define DEFAULT_UART_STOPBITS 1.0
-#define DEFAULT_UART_FLOW     SerialPortFlowControlType::SerialPortFlowControlNone
+#define DEFAULT_UART_FLOW     SerialPortFlowControlType::SerialPortFlowControlRTS
 #define DEFAULT_MODEM_TYPE    ModemType::ModemTypeStraight
 #define DEFAULT_UART_INVERTED false
 
