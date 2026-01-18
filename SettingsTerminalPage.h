@@ -43,6 +43,11 @@ public:
         terminalPreferences.selectPrevTerminalMode();
         render();
         break;
+      case VirtualKey::VK_e:
+      case VirtualKey::VK_E:
+        terminalPreferences.toggleLocalEcho();
+        render();
+        break;
       case VirtualKey::VK_n:
       case VirtualKey::VK_N:
         terminalPreferences.toggleNewLineMode();
@@ -114,6 +119,10 @@ private:
     terminal.write(EC_BLD "T" EC_NOF ". " EC_BLD "T" EC_NOF "erminal mode\t");
     terminal.write(terminalPreferences.selectedTerminalModeName());
     terminal.write(EC_CRLF EC_CRLF);
+
+    terminal.write(EC_BLD "E" EC_NOF ". Local " EC_BLD "E" EC_NOF "cho\t");
+    terminal.write(terminalPreferences.selectedLocalEcho ? "On" : "Off");
+    terminal.write(EC_CRLF);
 
     terminal.write(EC_BLD "N" EC_NOF ". " EC_BLD "N" EC_NOF "ewline mode\t");
     terminal.write(terminalPreferences.selectedNewLineMode ? "CR+LF" : "CR");

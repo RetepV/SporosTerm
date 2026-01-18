@@ -12,6 +12,7 @@ extern TerminalPreferences terminalPreferences;
 
 #define DEFAULT_TERMINALMODE              fabgl::ANSI_VT
 #define DEFAULT_NEWLINEMODE               true
+#define DEFAULT_LOCAL_ECHO                false
 #define DEFAULT_SMOOTH_SCROLL             true
 #define DEFAULT_AUTOREPEAT                true
 #define DEFAULT_CURSOR_BLINK              true
@@ -45,6 +46,7 @@ public:
   // 8: ANSILegacy
   const char *prefTerminalModeKey       = "TM";
   const char *prefNewlineModeKey        = "NL";         // TRUE: CRLF, FALSE: CR only
+  const char *prefLocalEchoKey          = "LE";         // TRUE: Local Echo on, FALSE: Local echo off
   const char *prefSmoothScrollKey       = "SS";         // TRUE: smooth scroll, FALSE: jump scroll
   const char *prefKeyAutoRepeatKey      = "AR";         // TRUE: autorepeat, FALSE: mo autorepeat
   const char *prefCursorBlinkKey        = "CB";         // TRUE: cursor blink, FALSE: cursor doesn't blink
@@ -58,6 +60,8 @@ public:
   fabgl::TermType selectedTerminalMode;
   bool currentNewLineMode;
   bool selectedNewLineMode;
+  bool currentLocalEcho;
+  bool selectedLocalEcho;
   bool currentSmoothScroll;
   bool selectedSmoothScroll;
   bool currentAutoRepeat;
@@ -101,6 +105,8 @@ public:
   void fetch() {
     currentTerminalMode = (TermType)preferences.getInt(prefTerminalModeKey);
     selectedTerminalMode = currentTerminalMode;
+    currentLocalEcho = preferences.getBool(prefLocalEchoKey);
+    selectedLocalEcho = currentLocalEcho;
     currentNewLineMode = preferences.getBool(prefNewlineModeKey);
     selectedNewLineMode = currentNewLineMode;
     currentSmoothScroll = preferences.getBool(prefSmoothScrollKey);
@@ -134,6 +140,7 @@ public:
 
     preferences.putInt(prefTerminalModeKey, (int)selectedTerminalMode);
     preferences.putBool(prefNewlineModeKey, selectedNewLineMode);
+    preferences.putBool(prefLocalEchoKey, selectedLocalEcho);
     preferences.putBool(prefSmoothScrollKey, selectedSmoothScroll);
     preferences.putBool(prefKeyAutoRepeatKey, selectedAutoRepeat);
     preferences.putBool(prefCursorBlinkKey, selectedCursorBlink);
@@ -162,6 +169,9 @@ public:
 
     if (!preferences.isKey(prefTerminalModeKey)) {
       preferences.putInt(prefTerminalModeKey, (int)DEFAULT_TERMINALMODE);
+    }
+    if (!preferences.isKey(prefLocalEchoKey)) {
+      preferences.putBool(prefLocalEchoKey, (int)DEFAULT_LOCAL_ECHO);
     }
     if (!preferences.isKey(prefNewlineModeKey)) {
       preferences.putBool(prefNewlineModeKey, DEFAULT_NEWLINEMODE);
@@ -202,6 +212,7 @@ public:
   void apply() {
 
     terminal.setTerminalType(currentTerminalMode);
+    terminal.enableLocalEcho(currentLocalEcho);
     terminal.enableNewLineMode(currentNewLineMode);
     terminal.enableSmoothScroll(currentSmoothScroll);
     terminal.enableKeyAutorepeat(currentAutoRepeat);
@@ -244,6 +255,10 @@ public:
 
   const char *selectedTerminalModeName() {
     return terminalModeNames[selectedTerminalMode];
+  }
+
+  void toggleLocalEcho() {
+    selectedLocalEcho = !selectedLocalEcho;
   }
 
   void toggleNewLineMode() {

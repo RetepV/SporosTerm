@@ -38,6 +38,8 @@ private:
 
     DisplayMode currentDisplayMode  = displayPreferences.currentDisplayMode();
 
+    terminal.write("\e[0;0H");
+
     for (int row = 0; row < currentDisplayMode.rows; row++) {
       if (row == 0) {
         for (int col = 0; col < currentDisplayMode.columns; col++) {
@@ -69,50 +71,66 @@ private:
         terminal.write(scratchBuf);
       }
 
-      if (row == 2) {
+      if (row == 3) {
         sprintf(scratchBuf, "   Resolution: %dx%d (%dx%d characters)", currentDisplayMode.xRes, currentDisplayMode.yRes, currentDisplayMode.columns, currentDisplayMode.rows);
         terminal.write(scratchBuf);
       }
-      else if (row == 4) {
+      else if (row == 5) {
         terminal.write("   ");
         for (uint8_t ch = 0; ch < 64; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 5) {
+      else if (row == 6) {
         terminal.write("   ");
         for (uint8_t ch = 64; ch < 128; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 6) {
+      else if (row == 7) {
         terminal.write("   ");
         for (uint8_t ch = 128; ch < 192; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 7) {
+      else if (row == 8) {
         terminal.write("   ");
         for (uint8_t ch = 192; ch < 255; ch++) {
           sprintf(scratchBuf, "%c", printableChar(ch));
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 9) {
+      else if (row == 10) {
+        terminal.write("   " EC_BLD "BOLD" EC_NOF "  " EC_LOI "Low intensity" EC_NOF "  " EC_ULN "Underline" EC_NOF "  " EC_BLK "Blinking" EC_NOF "  " EC_REV "Reverse" EC_NOF "  " EC_INV "Invisible" EC_NOF "<-Invisible");
+      }
+       else if (row == 12) {
+         terminal.write("\tTAB\tTAB\tTAB\tTAB");
+       }
+      else if (row == 14) {
+        terminal.write(EC_DWI " Double width" EC_NOF);
+      }
+      else if (row == 15) {
+        terminal.write(EC_DHI_T "  Double height" EC_NOF);
+      }
+      else if (row == 16) {
+        terminal.write(EC_DHI_B "  Double height" EC_NOF);
+      }
+
+      else if (row == 18) {
         sprintf(scratchBuf, "   Colors (%d):", currentDisplayMode.colors);
         terminal.write(scratchBuf);          
       }
-      else if (row == 10) {
+      else if (row == 19) {
         terminal.write("      ");
         for (uint8_t color = 30; color <= 37; color++) {
           sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
           terminal.write(scratchBuf);          
         }
       }
-      else if (row == 11) {
+      else if (row == 20) {
         terminal.write("      ");
         for (uint8_t color = 90; color <= 97; color++) {
           sprintf(scratchBuf, EC_NOF "[\e[%dm" EC_REV "%2d" EC_NOF "] ", color, color);
