@@ -59,11 +59,8 @@ struct SignonMessage {
     int destXRes = displayPreferences.currentDisplayMode().xRes;
     int destYRes = displayPreferences.currentDisplayMode().yRes;
 
-    const int spriteXPos = 288;
-    const int spriteYPos = TRANSLATE_RES(9, sourceRows, destRows) * displayPreferences.currentDisplayMode().font->height;
-
-    int finalSpriteXPos = TRANSLATE_RES(spriteXPos, sourceXRes, destXRes);
-    int finalSpriteYPos = TRANSLATE_RES(spriteYPos, sourceYRes, destYRes);
+    int finalSpriteXPos = TRANSLATE_RES(288, sourceXRes, destXRes);
+    int finalSpriteYPos = TRANSLATE_RES(9, sourceRows, destRows) * displayPreferences.currentDisplayMode().font->height;
 
     terminal.write(EC_ALLOCSPRITES(1));
     terminal.write(EC_DEFSPRITECOL(0,64,20,"M",255,255,255,SPOROS_TECH_MONO_LOGO_DATA));
