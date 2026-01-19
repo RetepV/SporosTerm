@@ -67,28 +67,28 @@ struct GlyphsBufferSaver {
       return;
     }
 
-    int16_t bufferColumns;
-    int16_t bufferRows;
-    int16_t terminalColumns = terminal.getColumns();
-    int16_t terminalRows = terminal.getRows();
-
-    fabgl::GlyphsBuffer *glyphsBuffer = terminal.getCurrentGlyphsBuffer();
-
-    if (glyphsBuffer == nullptr) {
-      bufferFile.close();
-      return;
-    }
-
-    if (bufferFile.read((uint8_t *)&bufferColumns, sizeof(int16_t)) != sizeof(int16_t)) {
-      bufferFile.close();
-      return;
-    }
-    if (bufferFile.read((uint8_t *)&bufferRows, sizeof(int16_t)) != sizeof(int16_t)) {
-      bufferFile.close();
-      return;
-    }
-
     terminal.withLockedTerminal([&bufferFile]() {
+
+      int16_t bufferColumns;
+      int16_t bufferRows;
+      int16_t terminalColumns = terminal.getColumns();
+      int16_t terminalRows = terminal.getRows();
+
+      fabgl::GlyphsBuffer *glyphsBuffer = terminal.getCurrentGlyphsBuffer();
+
+      if (glyphsBuffer == nullptr) {
+        bufferFile.close();
+        return;
+      }
+
+      if (bufferFile.read((uint8_t *)&bufferColumns, sizeof(int16_t)) != sizeof(int16_t)) {
+        bufferFile.close();
+        return;
+      }
+      if (bufferFile.read((uint8_t *)&bufferRows, sizeof(int16_t)) != sizeof(int16_t)) {
+        bufferFile.close();
+        return;
+      }
 
       for (int y = 0; y < glyphsBuffer->rows; ++y) {
         volatile uint32_t *itemPtr = glyphsBuffer->map + y * terminalColumns;
