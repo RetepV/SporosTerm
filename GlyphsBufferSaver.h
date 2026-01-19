@@ -32,30 +32,34 @@ struct GlyphsBufferSaver {
       return;
     }
 
-    fabgl::GlyphsBuffer *glyphsBuffer = terminal.getCurrentGlyphsBuffer();
+    terminal.withLockedTerminal([&bufferFile]() {
 
-    if (glyphsBuffer == nullptr) {
-      Serial.printf("glyphsBuffer is null\n");
-      return;
-    }
+      fabgl::GlyphsBuffer *glyphsBuffer = terminal.getCurrentGlyphsBuffer();
 
-    bufferFile.write((uint8_t *)&(glyphsBuffer->columns), sizeof(int16_t));
-    bufferFile.write((uint8_t *)&(glyphsBuffer->rows), sizeof(int16_t));
-
-    for (int y = 0; y < glyphsBuffer->rows; ++y) {
-      uint32_t *itemPtr = glyphsBuffer->map + y * glyphsBuffer->columns;
-      for (int x = 0; x < glyphsBuffer->columns; ++x, ++itemPtr) {
-        bufferFile.write((uint8_t *)itemPtr, sizeof(uint32_t));
+      if (glyphsBuffer == nullptr) {
+        Serial.printf("glyphsBuffer is null\n");
+        return;
       }
-    }
+
+      bufferFile.write((uint8_t *)&(glyphsBuffer->columns), sizeof(int16_t));
+      bufferFile.write((uint8_t *)&(glyphsBuffer->rows), sizeof(int16_t));
+
+      for (int y = 0; y < glyphsBuffer->rows; ++y) {
+        volatile uint32_t *itemPtr = glyphsBuffer->map + y * glyphsBuffer->columns;
+        for (int x = 0; x < glyphsBuffer->columns; ++x, ++itemPtr) {
+          bufferFile.write((uint8_t *)itemPtr, sizeof(uint32_t));
+        }
+      }
+    });
 
     bufferFile.close();
 
-    // GlyphsBufferSaver::dumpBufferFile();
-    // GlyphsBufferSaver::dumpBufferFileRaw();
+    // GlyphsBufferSaver::dumpGlyphsBuffer();
   }
 
   static void restoreGlyphsBuffer() {
+
+    // GlyphsBufferSaver::dumpGlyphsBuffer();
 
     File bufferFile = LittleFS.open(savedGlyphsBufferFilename, FILE_READ);
     if (!bufferFile) {
@@ -84,22 +88,25 @@ struct GlyphsBufferSaver {
       return;
     }
 
-    for (int y = 0; y < glyphsBuffer->rows; ++y) {
-      uint32_t *itemPtr = glyphsBuffer->map + y * terminalColumns;
-      for (int x = 0; x < glyphsBuffer->columns; ++x, ++itemPtr) {
-        if (bufferFile.read((uint8_t *)itemPtr, sizeof(uint32_t)) != sizeof(uint32_t)) {
-          bufferFile.close();
-          return;
+    terminal.withLockedTerminal([&bufferFile]() {
+
+      for (int y = 0; y < glyphsBuffer->rows; ++y) {
+        volatile uint32_t *itemPtr = glyphsBuffer->map + y * terminalColumns;
+        for (int x = 0; x < glyphsBuffer->columns; ++x, ++itemPtr) {
+          if (bufferFile.read((uint8_t *)itemPtr, sizeof(uint32_t)) != sizeof(uint32_t)) {
+            bufferFile.close();
+            return;
+          }
         }
       }
-    }
+    });
 
     bufferFile.close();
 
     terminal.refresh();
   }
 
-  static void dumpBufferFile() {
+  static void dumpGlyphsBuffer() {
 
     File bufferFile = LittleFS.open(savedGlyphsBufferFilename, FILE_READ);
     if (!bufferFile) {
@@ -122,15 +129,21 @@ struct GlyphsBufferSaver {
       return;
     }
 
+    Serial.printf("Glyphs buffer (columns, rows): (%d, %d)\nBytes:\n", columns, rows);
+
     for (int y = 0; y < rows; ++y) {
-      for (int x = 0; x < columns; ++x) {
-        uint8_t byte;
-        if (bufferFile.read((uint8_t *)&byte, sizeof(uint8_t)) != sizeof(uint8_t)) {
+      for (int x = 0; x < columns ; ++x) {
+        uint32_t longWord;
+        if (bufferFile.read((uint8_t *)&longWord, sizeof(uint32_t)) != sizeof(uint32_t)) {
           Serial.printf("Couldn't read enough data\n");
           bufferFile.close();
           return;
         }
+        // Serial.printf("%08X ", longWord);
+        char c = longWord & 0xFF;
+        Serial.printf("%c", (c >= 32) ? c : '.');
       }
+      Serial.printf("\n");
     }
 
     bufferFile.close();
