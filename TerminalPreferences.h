@@ -11,8 +11,8 @@ extern TerminalPreferences terminalPreferences;
 #define NUM_CURSORSTYLES                  4
 
 #define DEFAULT_TERMINALMODE              fabgl::ANSI_VT
-#define DEFAULT_NEWLINEMODE               true
 #define DEFAULT_LOCAL_ECHO                false
+#define DEFAULT_NEWLINEMODE               false
 #define DEFAULT_SMOOTH_SCROLL             true
 #define DEFAULT_AUTOREPEAT                true
 #define DEFAULT_CURSOR_BLINK              true
