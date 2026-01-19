@@ -140,34 +140,13 @@ struct GlyphsBufferSaver {
           return;
         }
         // Serial.printf("%08X ", longWord);
+        // LSByte in the int32 is mostly the ASCII character. Sometimes a control character. Just print it.
         char c = longWord & 0xFF;
         Serial.printf("%c", (c >= 32) ? c : '.');
       }
       Serial.printf("\n");
     }
 
-    bufferFile.close();
-  }
-
-  static void dumpBufferFileRaw() {
-
-    File bufferFile = LittleFS.open(savedGlyphsBufferFilename, FILE_READ);
-    if (!bufferFile) {
-      Serial.printf("Couldn't open file %s, errno: %d\n", savedGlyphsBufferFilename, errno);
-      return;
-    }
-    
-    while (bufferFile.available()) {
-      uint8_t byte;
-      uint8_t cnt = 0;
-
-      bufferFile.read(&byte, sizeof(uint8_t));
-      Serial.printf("%02X", byte);
-      if ((cnt != 0 ) && ((cnt % 64) == 0)) {
-        Serial.printf("\n");
-      }
-    }
-    Serial.printf("\n");
     bufferFile.close();
   }
 };
