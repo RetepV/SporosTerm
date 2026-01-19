@@ -5,7 +5,7 @@
 #include "FS.h"
 #include <LittleFS.h>
 
-#define VERSION_NUMBER    0.5
+#define VERSION_NUMBER    0.6
 
 // Some forward declarations to satisfy dependencies.
 static void switchToLocalMode();
