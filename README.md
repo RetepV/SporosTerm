@@ -5,6 +5,10 @@ This works with the FabGL library, but only a patched version which can be found
 
 I am working on documentation, but the UI is so simple that you can figure it out yourself. Connect the nTerm2-S to a VGA screen and connect a PS/2 keyboard. When SporosTerm starts up, it's ready to work. If you want to change settings, press F12. Don't forget to press 'A' for sAve (or Apply?) to save your changes.
 
+# Fun stuff
+
+Check out https://github.com/RetepV/aight-man for a Pac-Man game written in Python, and which runs on SporosTerm.
+
 # How to build
 
 This is a quick description of how to build and deploy this application using the Arduino environment. I have provided binaries to upload to the nTerm2-S, which means that you should not have to build this code by yourself, but you might want to. You can find the binaries here: https://github.com/RetepV/SporosTerm/releases.
