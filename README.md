@@ -47,10 +47,11 @@ Now you should be ready to go!
 
 
 >[!NOTE]
->On my Macbook, I notice that it will not always provide power to my nTerm2-S board when I connect it directly to an on-board USB port. Probably the Macbook does not trust the nTerm2-S, blacklists it, and will refuse to power it. The solution is to connect through a USB hub.
+>~~On my Macbook, I notice that it will not always provide power to my nTerm2-S board when I connect it directly to an on-board USB port. Probably the Macbook does not trust the nTerm2-S, blacklists it, and will refuse to power it. The solution is to connect through a USB hub.
 >The nTerm2-S uses no more than 250mA. With display modes that support Bluetooth, it seems to use about 150mA when transferring a lot of data. With display modes that don't support Bluetooth, it's about 80mA continuous. During boot, I can see a spike of around 250mA, probably the ESP32's radio is turned on by default during boot, and it takes a few milliseconds to shut it down again.
->Anyway, Macbooks are very expensive to repair, so it's never a bad idea to connect USB devices through a hub. :sunglasses:
+>Anyway, Macbooks are very expensive to repair, so it's never a bad idea to connect USB devices through a hub. :sunglasses:~~
 >
+>This turned out to be the missing of two 5.1K resistors on the configuration pins of the USB-C port, and not related to overuse of power at all. It has been fixed, and nTerm2-S works fine when connected directly to a Macbook.
 >
 
 # Why "Sporos"? What does it mean?
