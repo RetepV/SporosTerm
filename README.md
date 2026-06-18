@@ -7,7 +7,7 @@ I am working on documentation, but the UI is so simple that you can figure it ou
 
 # Fun stuff
 
-Check out https://github.com/RetepV/aight-man for a Pac-Man game written in Python, and which runs on SporosTerm.
+Check out https://github.com/RetepV/aight-man for a Pac-Man game written in Python, and runs on SporosTerm.
 
 # How to build
 
